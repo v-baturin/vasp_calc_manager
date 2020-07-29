@@ -1,0 +1,7 @@
+{"init_gjf": "initial_config.gjf",
+  "normal": {"flag": "Normal termination", "tail": 1},
+  "restart": {"corrector": {"route": {"scf": {"yqc": null}}}},
+  "errors": {"low_phys_mem": {"flag": "could not allocate memory", "tail": 20,
+             "msg": "Could not allocate memory",
+             "corrector": {"command": {"mem": "4000-100<1000"}}},
+             "low_alloc_mem": {"flag": "Out-of-memory error", "tail": false, "msg": "Insufficient memory allocated", "corrector": {"command": {"mem": "1000+1000<10000"}}}}, "fails": {"bad_input": {"flag": "Error termination via.*l101", "tail": 50, "msg": "Bad input file", "corrector": {"route": {"scf": {"yqc": null}}}}}}
