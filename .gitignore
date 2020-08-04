@@ -1,2 +1,6 @@
+*.txt
+*.pkl
+log
+RECALC*
 __pycache__
 *.pyc
