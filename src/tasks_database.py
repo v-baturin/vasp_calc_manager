@@ -94,39 +94,42 @@ class GauTask:
 
 class GauCalcDB(list):
 
-    def __init__(self, scenarios='scenarios.cjson', poscars_fname=None, destination_fold=None, maxiter=5,
-                 computer='local', machines_json='machines.json', outpattern='log', inpattern='*.gjf'):
+    def __init__(self, scenarios='scenarios.cjson', poscars_file=None, recalc_folder=None, maxcalcs=5,
+                 machine='local', machines_json='machines.json', outfile_pattern='log', inpattern='*.gjf', min_mult=False):
 
         list.__init__(self)
 
-        self.maxiter = maxiter
-        self.master_folder = destination_fold
+        self.maxiter = int(maxcalcs)
+        self.master_folder = recalc_folder
 
         scen_dct = cjson_load(scenarios)
         init_gjf = Gjf(scen_dct['init_gjf'])
 
         mach_dcts = cjson_load(machines_json)
-        machine_dict = mach_dcts[computer]
+        machine_dict = mach_dcts[machine]
 
-        if poscars_fname and isfile(poscars_fname):
+        if poscars_file and isfile(poscars_file):
 
-            poscars_list = read_poscars(poscars_fname)
+            poscars_list = read_poscars(poscars_file)
 
             for poscar in poscars_list:
                 # Creating task entry
                 formula = poscar.get_chemical_formula()
                 init_gjf['molstruct'] = poscar
-                curr_dest_folder = mk_new_dir(destination_fold + '/' + formula + '/' + formula, zerobased=True)
+                if min_mult:
+                    init_gjf['charge_mult'] = init_gjf['charge_mult'].split()[0] +\
+                                              ' ' + str(sum(poscar.get_atomic_numbers()) % 2 + 1)
+                curr_dest_folder = mk_new_dir(recalc_folder + '/' + formula + '/' + formula, zerobased=True)
                 curr_label = curr_dest_folder.split('/')[-1]
                 task = GauTask(gjf=init_gjf, folder=curr_dest_folder, name=curr_label, jobfile='jobfile.sh',
-                               machine=computer, machine_dict=machine_dict,
-                               out_fname=re.sub('.*\.', curr_label + '.', outpattern))
+                               machine=machine, machine_dict=machine_dict,
+                               out_fname=re.sub('.*\.', curr_label + '.', outfile_pattern))
                 # task.copyfiles()  # Copying necessary files
                 self.append(task)
 
-        elif inpattern and outpattern:
+        elif inpattern and outfile_pattern:
 
-            all_logs = Path(destination_fold).rglob(inpattern)
+            all_logs = Path(recalc_folder).rglob(inpattern)
             n_logs = 0
             for k_log_file in all_logs:
                 curr_folder_full = str(k_log_file.parent)
@@ -135,13 +138,13 @@ class GauCalcDB(list):
                 jobfname = sh_execute('ls ' + curr_folder_full + '/*job*').strip().split('/')[-1]
                 gjf = Gjf(work_gjf_name)
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=curr_folder, jobfile=jobfname,
-                               machine=computer, machine_dict=machine_dict)
+                               machine=machine, machine_dict=machine_dict)
                 self.append(task)
                 n_logs += 1
             if n_logs == 0:
                 raise Exception('Destination folder has no Gaussian calculations with in- and out-files of provided format!')
         else:
-            raise Exception('Error: destination_folder and (poscars_fname or outpattern) must be provided! ')
+            raise Exception('Error: destination_folder and (poscars_file or outfile_pattern) must be provided! ')
 
     def __str__(self):
         return '<GauCalcDB: ' + str(len(self)) + ' GauTask objects in ' + self.master_folder + '>'
@@ -282,28 +285,28 @@ class GauCalcDB(list):
                     en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
 
 
-if __name__ == '__main__':
-    init_gjf = Gjf('../testfolder/complicated.gjf')
-
-    # jobtemplate = '../testfolder/job_arkuda.sh'
-    template = '../testfolder/job_oleg.sh'
-    dest_fold = '../DESTINATION'
-    poscars_fname = '../testfolder/POSCARS'
-    database = GauCalcDB(scenarios='../scenarios.cjson', poscars_fname=poscars_fname, destination_fold=dest_fold,
-                         machines_json='../machines.cjson', computer='rurik')
-    # database.submitjobs()
-    database.get_stats(verb=True)
-    database.dump()
-
-    del database
-
-    with open('database.pickle', 'rb') as db_fid:
-        db = pickle.load(db_fid)
-
-    # db
-
-    print(db)
-    # with open('pkl.pkl', 'rb') as f:
-    #     x = pickle.load(f)
-    # print(x[0].gjf)
-    # pass
+# if __name__ == '__main__':
+#     init_gjf = Gjf('../testfolder/complicated.gjf')
+#
+#     # jobtemplate = '../testfolder/job_arkuda.sh'
+#     template = '../testfolder/job_oleg.sh'
+#     dest_fold = '../DESTINATION'
+#     poscars_file = '../testfolder/POSCARS'
+#     database = GauCalcDB(scenarios='../scenarios.cjson', poscars_file=poscars_file, recalc_folder=dest_fold,
+#                          machines_json='../machines.cjson', machine='rurik')
+#     # database.submitjobs()
+#     database.get_stats(verb=True)
+#     database.dump()
+#
+#     del database
+#
+#     with open('database.pickle', 'rb') as db_fid:
+#         db = pickle.load(db_fid)
+#
+#     # db
+#
+#     print(db)
+#     # with open('pkl.pkl', 'rb') as f:
+#     #     x = pickle.load(f)
+#     # print(x[0].gjf)
+#     # pass
