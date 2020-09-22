@@ -11,7 +11,6 @@ from src.tasks_database import GauCalcDB
 
 sys.stdout = open('log', 'w')
 
-
 if len(sys.argv) == 1:
     sys.argv.extend(['-p', '1-10_even_POSCARS',
                      '-f', 'RECALC',

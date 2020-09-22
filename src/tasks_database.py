@@ -257,7 +257,7 @@ class GauCalcDB(list):
             print('\n'.join(fullstory))
 
         if stats_file:
-            with open('../' + stats_file, 'a+') as stats_fid:
+            with open(stats_file, 'a+') as stats_fid:
                 for tsk in fullstory:
                     stats_fid.write(tsk + '\n')
 
