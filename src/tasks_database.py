@@ -254,7 +254,7 @@ class GauCalcDB(list):
         if stats_file:
             with open('../' + stats_file, 'a+') as stats_fid:
                 for tsk in fullstory:
-                    stats_fid.write(tsk + '/n')
+                    stats_fid.write(tsk + '\n')
 
         if stats['P'] == 0 and stats['R'] == 0:
             print('No running or pending tasks!\n')
