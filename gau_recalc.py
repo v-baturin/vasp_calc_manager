@@ -62,7 +62,7 @@ while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
     else:
         database = GauCalcDB(scenarios=args['scenarios'], poscars_fname=poscars_fname, destination_fold=recalc_fold,
                              maxiter=maxcalcs, computer=machine, machines_json=machines_dct, outpattern=outfilepattern)
-
+        database.update(scenarios=args['scenarios'])
     database.submit_jobs(n_par_calcs=maxcalcs)
     database.get_stats(verb=True)
     database.dump(filename_pkl=db_file, filename_en='energies.txt')
