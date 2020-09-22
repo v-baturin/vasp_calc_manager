@@ -56,22 +56,14 @@ while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
     # Checking if database file exists:
     print('*' * 10 + '{:%Y-%m-%d %H:%M}'.format(datetime.now()) + '*' * 10 + '\n')
     if os.path.isfile(db_file):
-
         with open(db_file, 'rb') as db_fid:
             database = pickle.load(db_fid)
-
         database.update(scenarios=args['scenarios'])
-
-
     else:
-
         database = GauCalcDB(scenarios='scenarios.cjson', poscars_fname=poscars_fname, destination_fold=recalc_fold,
-                             maxiter=maxcalcs, computer=machine, machines_json=machines_dct, outpattern='log')
-
+                             maxiter=maxcalcs, computer=machine, machines_json=machines_dct, outpattern=outfilepattern)
     database.submit_jobs(n_par_calcs=maxcalcs)
-
     database.get_stats(verb=True)
-
     database.dump(filename_pkl=db_file, filename_en='energies.txt')
 
     # sys.stdout.flush()

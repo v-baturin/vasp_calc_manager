@@ -8,7 +8,6 @@ from .ext_software_io import read_poscars, parse_gout
 from .gjf import Gjf
 from .common_tools import mk_new_dir, sh_execute, checkflag, cjson_load
 
-
 # termination_dict = {'init_gjf':  'initial_config.gjf',
 #                     'normal':   {'flags' : 'Normal termination', 'tail': 1}, # To be modified for orb_coeff etc
 #                     'restart':  {'corrector': {'route': {'scf': {'yqc': None}}}},
