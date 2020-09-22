@@ -199,7 +199,7 @@ class GauCalcDB(list):
                     task.ccdata = last_ccdata
 
                 # Check if task is done
-                if checkflag(scenarios_dct['normal']['flags'], logfile):
+                if checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
                     print(task.name + ': DONE')
                     task.status = 'D'
                     continue
