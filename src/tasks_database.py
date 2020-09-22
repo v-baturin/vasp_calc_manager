@@ -63,7 +63,7 @@ class GauTask:
         return self.name + '.gjf'
 
     @property
-    def full_path(self):
+    def full_gjf_path(self):
         return self.folder + '/' + self.gjffilename
 
     def isrunning(self):
@@ -73,7 +73,7 @@ class GauTask:
     def copyfiles(self):
         if not os.path.isdir(self.folder):
             os.makedirs(self.folder)
-        self.gjf.save(self.full_path)
+        self.gjf.save(self.full_gjf_path)
         if 'command' not in self.gjf.keys() or 'nprocshared' not in self.gjf['command']:
             self.gjf['command'] = {'nprocshared': ''}
         sh_execute("sed 's/@INPUT/" + self.gjffilename + "/' " + self.machine_dict['jobtemplate'] + " | " +
@@ -170,11 +170,19 @@ class GauCalcDB(list):
 
         for task in self:
 
-            if not os.path.isfile(task.full_path):
+            if not os.path.isfile(task.full_gjf_path):
                 task.copyfiles()
                 task.status = 'P'
 
             logfile = task.folder + '/' + task.out
+
+            # Check if task is done
+            if isfile(logfile) and \
+                    checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
+                print(task.name + ': DONE')
+                task.status = 'D'
+                continue
+
 
             if task.k_iter >= self.maxiter:
                 print(task.name + ': MaxIter = ' + str(self.maxiter) + ' exceeded. Task failed')
@@ -188,7 +196,7 @@ class GauCalcDB(list):
 
                 # Update and backup geometry and store cclib data if possible
                 if not os.path.isfile(logfile):
-                    print("No log file generated! Check " + task.full_path)
+                    print("No log file generated! Check " + task.full_gjf_path)
                     task.status = 'P'
                     continue
                 last_ccdata, atoms = parse_gout(logfile)  # Check if at least one SCF cycle is done
@@ -196,12 +204,6 @@ class GauCalcDB(list):
                     task.old_coords = task.gjf['molstruct'].copy()
                     task.gjf['molstruct'] = atoms
                     task.ccdata = last_ccdata
-
-                # Check if task is done
-                if checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
-                    print(task.name + ': DONE')
-                    task.status = 'D'
-                    continue
 
                 # Check if task is failed
                 for fail_key, fail_val in scenarios_dct['fails'].items():
