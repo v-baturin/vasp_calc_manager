@@ -155,9 +155,7 @@ class GauCalcDB(list):
             if task.status == 'R':
                 submitted += 1
             if task.status == 'P':
-                print('BEFORE: ' + task.gjf['command']['chk'])
                 task.copyfiles()
-                print('AFTER:  ' + task.gjf['command']['chk'])
                 task.submit_job()
                 self[i].status = 'R'
                 submitted += 1
