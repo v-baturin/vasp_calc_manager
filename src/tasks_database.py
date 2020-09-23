@@ -85,8 +85,10 @@ class GauTask:
 
     def submit_job(self):
         print('Submitting ' + self.name)
-        submit_out = sh_execute('cd ' + self.folder + ' && ' + self.machine_dict['runcmd'] + ' ./' + self.jobfile,
-                                add_errors=True)
+        submit_cmd = 'cd ' + self.folder + ' && ' + self.machine_dict['runcmd'] + ' ./' + self.jobfile
+        print(submit_cmd) #TODO: RM DEBUG
+        submit_out = sh_execute(submit_cmd, add_errors=True)
+        print(submit_out)
         job_id = re.findall(self.machine_dict['jobid'], submit_out)[0]
         self.job_id = job_id
         print(job_id)
