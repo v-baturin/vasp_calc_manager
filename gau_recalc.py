@@ -37,12 +37,16 @@ machines_dct = cjson_load(input_kwargs['machines'])
 # Trying to automatically determine the supercomputer if not set
 if not input_kwargs['machine']:
     hostname = socket.gethostname()
+    print('hostname')
     input_kwargs['machine'] = 'local'
     for mach_k, mach_v in machines_dct.items():
         if mach_v['hostname'] in hostname:
+            print('check if ' + mach_v['hostname'] + ' in ' + hostname)
             input_kwargs['machine'] = mach_k
     print('Machine is automatically determined as: ' + mach_k)
     print('In case of error, specify the machine explicitly using -c key and edit the machines.cjson accordingly')
+
+sys.exit()
 
 # Assigning input arguments to variables, minding the defaults 
 # recalc_fold = input_kwargs['recalc_folder']
