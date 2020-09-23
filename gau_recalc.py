@@ -9,7 +9,7 @@ import time
 from src.common_tools import cjson_load
 from src.tasks_database import GauCalcDB
 
-# sys.stdout = open('log', 'w')
+sys.stdout = open('log', 'w')
 
 # if len(sys.argv) == 1:
 #     sys.argv.extend(['-p', '1-10_even_POSCARS',
@@ -68,7 +68,7 @@ while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
     database.get_stats(verb=True)
     database.dump(filename_pkl=input_kwargs['database_file'], filename_en='energies.txt')
 
-    # sys.stdout.flush()
+    sys.stdout.flush()
     sleep_sec = int(float(input_kwargs['sleep']) * 60)
     time.sleep(sleep_sec)
 
