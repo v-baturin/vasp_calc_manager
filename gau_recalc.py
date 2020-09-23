@@ -11,12 +11,12 @@ from src.tasks_database import GauCalcDB
 
 sys.stdout = open('log', 'w')
 
-if len(sys.argv) == 1:
-    sys.argv.extend(['-p', '1-10_even_POSCARS',
-                     '-f', 'RECALC',
-                     '-d', 'database.pkl',
-                     '-c', 'local', '--maxcalc', '3',
-                     '--min_mult'])
+# if len(sys.argv) == 1:
+#     sys.argv.extend(['-p', '1-10_even_POSCARS',
+#                      '-f', 'RECALC',
+#                      '-d', 'database.pkl',
+#                      '-c', 'local', '--maxcalc', '3',
+#                      '--min_mult'])
 print(sys.argv)  # debug
 
 ap = argparse.ArgumentParser()
@@ -43,7 +43,7 @@ if not input_kwargs['machine']:
         if mach_v['hostname'] in hostname:
             print('check if ' + mach_v['hostname'] + ' in ' + hostname)
             input_kwargs['machine'] = mach_k
-    print('Machine is automatically determined as: ' + mach_k)
+    print('Machine is automatically determined as: ' + input_kwargs['machine'])
     print('In case of error, specify the machine explicitly using -c key and edit the machines.cjson accordingly')
 
 sys.exit()
