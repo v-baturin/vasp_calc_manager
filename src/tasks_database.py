@@ -123,6 +123,7 @@ class GauCalcDB(list):
                                               ' ' + str(sum(poscar.get_atomic_numbers()) % 2 + 1)
                 curr_dest_folder = mk_new_dir(recalc_folder + '/' + formula + '/' + formula, zerobased=True)
                 curr_label = curr_dest_folder.split('/')[-1]
+                print(curr_label + 'chmult = ' + init_gjf['charge_mult'])  # TODO:remove
                 task = GauTask(gjf=init_gjf, folder=curr_dest_folder, name=curr_label, jobfile='jobfile.sh',
                                machine=machine, machine_dict=machine_dict,
                                out_fname=re.sub('.*\.', curr_label + '.', outfile_pattern))
