@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -l nodes=1:ppn=@NPROCSHARED,walltime=0:05:00
+#PBS -l nodes=1:ppn=@NPROCSHARED,walltime=10:00:00
 #PBS -N @JOBNAME
 #PBS -j oe
 #PBS -V
