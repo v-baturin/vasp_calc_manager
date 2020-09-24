@@ -63,9 +63,15 @@
                                  "corrector": {"command": {"mem": "1000+1000<10000"}}}
                },
   "fails":     {"scf_conv_failure": {"flags": "Convergence failure -- run terminated.", "tail": false,
-                                    "msg": "Convergencve failed",
+                                    "msg": "SCF convergencve failed",
                                     "corrector": {"route": {"scf": {"yqc": null,
                                                                     "maxcycle":"100+50<1000"}
+                                                           }
+                                                 }
+                                   },
+                "geom_insuff_steps": {"flags": "-- Number of steps exceeded,  NStep=", "tail": false,
+                                    "msg": "Geom opt failed",
+                                    "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}
                                                            }
                                                  }
                                    },
