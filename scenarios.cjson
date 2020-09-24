@@ -43,7 +43,7 @@
  \#---------------------------------------------------------------------------------------------------------------------
  \# {'k1':None, 'k2':1, 'k3':10}       | {'k1':'7+3<25','k2': '3+2<15',       | {'k1':7, 'k2':3, 'k3':8}
  \#                                    |  'k3':'15-2>5'}                      |
- \# '7+3<25' means if original value None or non-numerical or nonexistent, set 7, if numerical value x, set x+3,
+ \# '7+3<25' means: if original value None or non-numerical or nonexistent, set 7, if numerical value x, set x+3,
  \# if result is over 25, raise error. Similarly for '15-2>5'
  \#---------------------------------------------------------------------------------------------------------------------
  \# {'k1':{'k2':null}}                 | {'k1=':{'k3':5}}                     | {'k1':{'k3':5}}
@@ -68,7 +68,7 @@
                                                            }
                                                  }
                                    },
-                "geom_insuff_steps": {"flags": "\\-- Number of steps exceeded,  NStep=", "tail": false,
+                "geom_insuff_steps": {"flags": " Number of steps exceeded,  NStep=", "tail": false,
                                     "msg": "Geom opt failed",
                                     "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}
                                                            }
