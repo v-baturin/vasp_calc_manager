@@ -74,7 +74,7 @@
                                                            }
                                                  }
                                    },
-                "geometry_error": {"flags": ["failed for", "FormBX had a problem"], "tail": 20,
+                "geometry_error": {"flags": ["Error termination", "l103.exe"], "tail": 10,
                                     "msg": "Geometry error",
                                     "corrector": {"route": {"opt": {"Cart": null}
                                                            }
