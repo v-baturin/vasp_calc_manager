@@ -69,7 +69,13 @@
                                                            }
                                                  }
                                    },
-               "syntax_err1": {"flags": "scf=(verytight,maxcycle,yqc)", "tail": false,
+                "geometry_error": {"flags": ["failed for", "FormBX had a problem"], "tail": 20,
+                                    "msg": "Geometry error",
+                                    "corrector": {"route": {"opt": {"Cart": null}
+                                                           }
+                                                 }
+                                   },
+                "syntax_err1": {"flags": "scf=(verytight,maxcycle,yqc)", "tail": false,
                                     "msg": "SyntaxErr1",
                                     "corrector": {"route": {"scf=": {"verytight": null,
                                                                      "yqc": null,
@@ -77,15 +83,15 @@
                                                            }
                                                  }
                                    },
-               "symm_failure": {"flags": "Symmetry consistency failure.", "tail": false,
+                "symm_failure": {"flags": "Symmetry consistency failure.", "tail": false,
                                  "msg": "Symmetry consistency failure.",
                                  "corrector": {"route": {"nosymm": null}}},
-               "few_opt_Nstep": {"flags": "Number of steps exceeded,  NStep=", "tail": false,
+                "few_opt_Nstep": {"flags": "Number of steps exceeded,  NStep=", "tail": false,
                                  "msg": "Insufficient geometry opt steps",
                                  "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}}}},
-               "bad_basis": {"flags": "Atomic number out of range", "tail": 50,
+                "bad_basis": {"flags": "Atomic number out of range", "tail": 50,
                              "msg"  : "Insufficient basis",
                              "corrector" : {}},
-               "bad_input": {"flags": "Error termination via.*l101", "tail": 50,
+                "bad_input": {"flags": "Error termination via.*l101", "tail": 50,
                              "msg": "Bad input file",
                              "corrector": {"route": {"scf": {"yqc": null}}}}}}
