@@ -68,7 +68,7 @@
                                                            }
                                                  }
                                    },
-                "geom_insuff_steps": {"flags": "-- Number of steps exceeded,  NStep=", "tail": false,
+                "geom_insuff_steps": {"flags": "\\-- Number of steps exceeded,  NStep=", "tail": false,
                                     "msg": "Geom opt failed",
                                     "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}
                                                            }
