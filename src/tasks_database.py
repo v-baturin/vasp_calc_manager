@@ -1,6 +1,7 @@
 import re
 import pickle
 import os
+import glob
 from datetime import datetime
 from os.path import isfile
 from pathlib import Path
@@ -137,7 +138,11 @@ class GauCalcDB(list):
                 curr_folder_full = str(k_log_file.parent)
                 curr_folder = str(k_log_file.parts[-2])
                 work_gjf_name = sh_execute('ls ' + curr_folder_full + '/*.gjf').strip()
-                jobfname = sh_execute('ls ' + curr_folder_full + '/*job*').strip().split('/')[-1]
+                jobfnamesearch = glob.glob(curr_folder_full + '/*job*')
+                if jobfnamesearch:
+                    jobfname = jobfnamesearch[0]
+                else:
+                    jobfname = 'jobfile.sh'
                 gjf = Gjf(work_gjf_name)
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=curr_folder, jobfile=jobfname,
                                machine=machine, machine_dict=machine_dict)
