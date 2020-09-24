@@ -60,9 +60,8 @@
                                 "corrector": {"command": {"mem": "4000-100<1000"}}},
                "low_alloc_mem": {"flags": "Out-of-memory error", "tail": false,
                                  "msg": "Insufficient memory allocated",
-                                 "corrector": {"command": {"mem": "1000+1000<10000"}}}
-               },
-  "fails":     {"scf_conv_failure": {"flags": "Convergence failure -- run terminated.", "tail": false,
+                                 "corrector": {"command": {"mem": "1000+1000<10000"}}},
+               "scf_conv_failure": {"flags": "Convergence failure -- run terminated.", "tail": false,
                                     "msg": "SCF convergencve failed",
                                     "corrector": {"route": {"scf": {"yqc": null,
                                                                     "maxcycle":"100+50<1000"}
@@ -100,4 +99,8 @@
                              "corrector" : {}},
                 "bad_input": {"flags": "Error termination via.*l101", "tail": 50,
                              "msg": "Bad input file",
-                             "corrector": {"route": {"scf": {"yqc": null}}}}}}
+                             "corrector": {"route": {"scf": {"yqc": null}}}}
+               },
+  "fails":     {"bad_basis": {"flags": "Atomic number out of range", "tail": 50,
+                             "msg"  : "Insufficient basis",
+                             "corrector" : {}}}}
