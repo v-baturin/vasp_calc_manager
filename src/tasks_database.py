@@ -7,7 +7,7 @@ from os.path import isfile
 from pathlib import Path
 from .ext_software_io import read_poscars, parse_gout
 from .gjf import Gjf
-from .common_tools import mk_new_dir, sh_execute, checkflag, cjson_load
+from .common_tools import add_index, sh_execute, checkflag, cjson_load
 
 # termination_dict = {'init_gjf':  'initial_config.gjf',
 #                     'normal':   {'flags' : 'Normal termination', 'tail': 1}, # To be modified for orb_coeff etc
@@ -121,7 +121,7 @@ class GauCalcDB(list):
                 if min_mult:
                     init_gjf['charge_mult'] = init_gjf['charge_mult'].split()[0] +\
                                               ' ' + str(sum(poscar.get_atomic_numbers()) % 2 + 1)
-                curr_dest_folder = mk_new_dir(recalc_folder + '/' + formula + '/' + formula, zerobased=True)
+                curr_dest_folder = add_index(recalc_folder + '/' + formula + '/' + formula, zerobased=True)
                 curr_label = curr_dest_folder.split('/')[-1]
                 task = GauTask(gjf=init_gjf, folder=curr_dest_folder, name=curr_label, jobfile='jobfile.sh',
                                machine=machine, machine_dict=machine_dict,

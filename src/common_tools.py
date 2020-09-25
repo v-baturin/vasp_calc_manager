@@ -19,24 +19,26 @@ def sh_execute(cmdstring, add_errors=True):
         return o.decode('utf-8').strip()
 
 
-def mk_new_dir(dirname, zerobased=False, return_newname=False):
-    if zerobased:
-        newdirname = dirname + '_0'
+def add_index(fname, respect_file_extension=True, zerobased=False):
+
+    if respect_file_extension and '.' in fname.split('/')[-1]:
+        step = fname.split('.')
+        dot_file_extension = '.' + step[-1]
+        fname = '.'.join(step[:-1])
     else:
-        newdirname = dirname
-
-    if os.path.isdir(newdirname):
+        dot_file_extension = ''
+    if zerobased:
+        fname_next = fname + '_0'
+    else:
+        fname_next = fname
+    while os.path.exists(fname_next + dot_file_extension):
         k = 1
-        newdirname = dirname + '_' + str(k)
-        while os.path.isdir(newdirname):
-            k += 1
-            newdirname = dirname + '_' + str(k)
+        fname_next = fname + '_' + str(k)
+    return fname_next + dot_file_extension
 
-    if not return_newname:
-        os.makedirs(newdirname)
 
-    return newdirname
-
+def mk_new_dir(dirname):
+    os.mkdirs(add_index(dirname))
 
 def checkflag(flags, fname, tail=False):
     """
