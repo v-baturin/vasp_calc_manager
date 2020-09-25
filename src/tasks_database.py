@@ -97,12 +97,12 @@ class GauTask:
 
 class GauCalcDB(list):
 
-    def __init__(self, scenarios='scenarios.cjson', poscars_file=None, recalc_folder=None, maxcalcs=5,
+    def __init__(self, scenarios='scenarios.cjson', poscars_file=None, recalc_folder=None, maxiter=5,
                  machine='local', machines_json='machines.json', outfile_pattern='log', inpattern='*.gjf', min_mult=False):
 
         list.__init__(self)
 
-        self.maxiter = int(maxcalcs)
+        self.maxiter = int(maxiter)
         self.master_folder = recalc_folder
 
         scen_dct = cjson_load(scenarios)
@@ -194,7 +194,6 @@ class GauCalcDB(list):
                 print(task.name + ': DONE')
                 task.status = 'D'
                 continue
-
 
             if task.k_iter >= self.maxiter:
                 print(task.name + ': MaxIter = ' + str(self.maxiter) + ' exceeded. Task failed')

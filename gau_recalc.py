@@ -25,8 +25,9 @@ ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder', def
 ap.add_argument("-p", "--poscars_file", required=False, help="POSCARS-file", default='POSCARS')
 ap.add_argument("-d", "--database_file", required=False, help='DB file', default='database.pkl')
 ap.add_argument("-m", "--maxcalcs", required=False, help='Maximum parallel calcs', default='1')
-ap.add_argument("-o", "--outfile_pattern", required=False, help='Maximum parallel calcs', default='log')
+ap.add_argument("-o", "--outfile_pattern", required=False, help='Output file pattern', default='log')
 ap.add_argument("-s", "--sleep", required=False, help='Sleep time, in minutes', default='5')
+ap.add_argument("--maxiter", required=False, help='Maximum number of iteration', default='5')
 ap.add_argument("--machines", required=False, help='Machines cjson file', default='machines.cjson')
 ap.add_argument("--scenarios", required=False, help='Scenarios cjson file', default='scenarios.cjson')
 ap.add_argument("--min_mult", required=False, help='Use minimal multiplicity', action='store_true')
@@ -61,7 +62,7 @@ while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
         database.update(scenarios=input_kwargs['scenarios'])
     else:
         database = GauCalcDB(machines_json=machines_dct,
-                             **{k: input_kwargs[k] for k in ('scenarios', 'poscars_file', 'recalc_folder', 'maxcalcs',
+                             **{k: input_kwargs[k] for k in ('scenarios', 'poscars_file', 'recalc_folder', 'maxiter',
                                                              'machine', 'outfile_pattern', 'min_mult')})
         database.update(scenarios=input_kwargs['scenarios'])
     database.submit_jobs(n_par_calcs=int(input_kwargs['maxcalcs']))
