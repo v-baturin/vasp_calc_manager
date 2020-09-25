@@ -1,6 +1,8 @@
 %nprocshared=10
 %mem=4GB
 %chk=Mo4O5.chk
+%rwf=tmp.rwf
+%nosave
 #B3LYP/LANL2DZ nosymm opt freq IOp(5/13=1)  scf=YQC 
 
 Mo4O5

@@ -236,21 +236,24 @@ class Gjf(dict):
 
 
 if __name__ == '__main__':
-    # fname = '../example.gjf'
-    # gj1 = Gjf(fname)
-    # print(gj1)
-    fname = '../testfolder/complicated.gjf'
-    mooname = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/Mo10O14_orb.gjf'
-    gj2 = Gjf(mooname)
-    print(gj2)
-    test_corr = {'route': {'output': {'wfn': 5}}}
-    gj2.recurs_adjust(test_corr)
-    print(gj2)
-    gj2.save('nuka.gjf')
-
-    testorig = {'k1': {'kk': None, 'k2': 3, 'k3': {'k4': {'hello': None}, 'k5': 10}}}
-    # testcorr = {'k1': {'kk': 4,'k2': '4+2<6', 'k3=': {'k4': None, '-k5': None, 'k6': {'k7':None, 'k8': '5+2<15'}, 'k9': '7-1>3'}}}
-    testcorr = {'-k1': None}
-    gj3 = Gjf(testorig)
-    gj3.recurs_adjust(testcorr)
-    print(gj3)
+    # # fname = '../example.gjf'
+    # # gj1 = Gjf(fname)
+    # # print(gj1)
+    # fname = '../testfolder/complicated.gjf'
+    # mooname = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/Mo10O14_orb.gjf'
+    # gj2 = Gjf(mooname)
+    # print(gj2)
+    # test_corr = {'route': {'output': {'wfn': 5}}}
+    # gj2.recurs_adjust(test_corr)
+    # print(gj2)
+    # gj2.save('nuka.gjf')
+    # 
+    # testorig = {'k1': {'kk': None, 'k2': 3, 'k3': {'k4': {'hello': None}, 'k5': 10}}}
+    # # testcorr = {'k1': {'kk': 4,'k2': '4+2<6', 'k3=': {'k4': None, '-k5': None, 'k6': {'k7':None, 'k8': '5+2<15'}, 'k9': '7-1>3'}}}
+    # testcorr = {'-k1': None}
+    # gj3 = Gjf(testorig)
+    # gj3.recurs_adjust(testcorr)
+    # print(gj3)
+    gjf_fname = '../gjf_templates/CH.gjf'
+    gj4 = Gjf(gjf_fname)
+    print(gj4['command'])

@@ -1,6 +1,8 @@
 %nprocshared=2
 %mem=1000mb
 %chk=Mo10O14.chk
+%rwf=tmp.rwf
+%nosave
 #B3LYP/Gen pseudo=read nosymm opt IOp(5/13=1) scf=(conver=6) POP=(Full, NBO)
 
 Mo10O14

@@ -163,10 +163,14 @@ class GauCalcDB(list):
                 submitted += 1
             if task.status == 'P':
                 task.copyfiles()
-                task.submit_job()
-                self[i].status = 'R'
-                submitted += 1
-                new += 1
+                try:
+                    task.submit_job()
+                except IndexError:
+                    print('Failed to submit: ' + task.name)
+                else:
+                    self[i].status = 'R'
+                    submitted += 1
+                    new += 1
             if submitted >= n_par_calcs:
                 break
         print('Submitted = ' + str(new) + '; Total running = ' + str(submitted))

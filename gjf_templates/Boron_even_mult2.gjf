@@ -1,5 +1,7 @@
 %mem=2GB
 %nprocshared=10
+%rwf=tmp.rwf
+%nosave
 %chk=Boron.chk
 #p PBE1PBE/Def2SVPP scf=(verytight,maxcycle=1000) opt freq
 
