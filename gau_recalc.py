@@ -11,14 +11,6 @@ from src.tasks_database import GauCalcDB
 
 sys.stdout = open('log', 'w')
 
-# if len(sys.argv) == 1:
-#     sys.argv.extend(['-p', '1-10_even_POSCARS',
-#                      '-f', 'RECALC',
-#                      '-d', 'database.pkl',
-#                      '-c', 'local', '--maxcalc', '3',
-#                      '--min_mult'])
-# print(sys.argv)  # debug
-
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
 ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder', default='RECALC')
@@ -46,11 +38,7 @@ if not input_kwargs['machine']:
     print('In case of error, specify the machine explicitly using -c key and edit the machines.cjson accordingly')
 
 # Assigning input arguments to variables, minding the defaults 
-# recalc_fold = input_kwargs['recalc_folder']
-# poscars_fname = input_kwargs['poscars_file']
 db_file = input_kwargs['database_file']
-# maxcalcs = int(input_kwargs['maxcalcs'])
-# outfilepattern = input_kwargs['outfile_pattern']
 
 if os.path.isfile(db_file):
     with open(db_file, 'rb') as db_fid:
@@ -66,7 +54,7 @@ while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
     print('*' * 10 + '{:%Y-%m-%d %H:%M}'.format(datetime.now()) + '*' * 10 + '\n')
     database.submit_jobs(n_par_calcs=int(input_kwargs['maxcalcs']))
     database.get_stats(verb=True)
-    database.dump(filename_pkl=input_kwargs['database_file'], filename_en='energies.txt')
+    database.dump(filename_pkl=db_file, filename_en='energies.txt')
     sys.stdout.flush()
     sleep_sec = int(float(input_kwargs['sleep']) * 60)
     time.sleep(sleep_sec)
