@@ -17,7 +17,7 @@ sys.stdout = open('log', 'w')
 #                      '-d', 'database.pkl',
 #                      '-c', 'local', '--maxcalc', '3',
 #                      '--min_mult'])
-print(sys.argv)  # debug
+# print(sys.argv)  # debug
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
@@ -52,23 +52,21 @@ db_file = input_kwargs['database_file']
 # maxcalcs = int(input_kwargs['maxcalcs'])
 # outfilepattern = input_kwargs['outfile_pattern']
 
+if os.path.isfile(db_file):
+    with open(db_file, 'rb') as db_fid:
+        database = pickle.load(db_fid)
+else:
+    database = GauCalcDB(machines_json=machines_dct,
+                         **{k: input_kwargs[k] for k in ('scenarios', 'poscars_file', 'recalc_folder', 'maxiter',
+                                                         'machine', 'outfile_pattern', 'min_mult')})
+
 
 while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
-    # Checking if database file exists:
+    database.update(scenarios=input_kwargs['scenarios'])
     print('*' * 10 + '{:%Y-%m-%d %H:%M}'.format(datetime.now()) + '*' * 10 + '\n')
-    if os.path.isfile(db_file):
-        with open(db_file, 'rb') as db_fid:
-            database = pickle.load(db_fid)
-        database.update(scenarios=input_kwargs['scenarios'])
-    else:
-        database = GauCalcDB(machines_json=machines_dct,
-                             **{k: input_kwargs[k] for k in ('scenarios', 'poscars_file', 'recalc_folder', 'maxiter',
-                                                             'machine', 'outfile_pattern', 'min_mult')})
-        database.update(scenarios=input_kwargs['scenarios'])
     database.submit_jobs(n_par_calcs=int(input_kwargs['maxcalcs']))
     database.get_stats(verb=True)
     database.dump(filename_pkl=input_kwargs['database_file'], filename_en='energies.txt')
-
     sys.stdout.flush()
     sleep_sec = int(float(input_kwargs['sleep']) * 60)
     time.sleep(sleep_sec)
