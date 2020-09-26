@@ -169,6 +169,7 @@ def atoms_2_str(atms):
 
 
 def parse_gout(logfile):
+    print('parsing: ' + logfile)
     ccdata = ccread(logfile)
     try:
         last_positions = ccdata.atomcoords[-1]
