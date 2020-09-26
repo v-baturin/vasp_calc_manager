@@ -38,8 +38,8 @@ def add_index(fname, respect_file_extension=True, zerobased=False):
     return fname_next + dot_file_extension
 
 
-def mk_new_dir(dirname):
-    newname = add_index(dirname)
+def mk_new_dir(dirname, zerobased=False):
+    newname = add_index(dirname, zerobased=zerobased)
     os.mkdirs(newname)
     return newname
 
