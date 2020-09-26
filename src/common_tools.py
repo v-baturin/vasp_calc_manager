@@ -39,7 +39,9 @@ def add_index(fname, respect_file_extension=True, zerobased=False):
 
 
 def mk_new_dir(dirname):
-    os.mkdirs(add_index(dirname))
+    newname = add_index(dirname)
+    os.mkdirs(newname)
+    return newname
 
 def checkflag(flags, fname, tail=False):
     """
