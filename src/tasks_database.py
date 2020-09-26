@@ -214,6 +214,11 @@ class GauCalcDB(list):
                     task.old_coords = task.gjf['molstruct'].copy()
                     task.gjf['molstruct'] = atoms
                     task.ccdata = last_ccdata
+                    last_ccdata.metadata['comments'] = []
+                    for k in range(len(last_ccdata.atomcoords)):
+                        last_ccdata.metadata['comments'].append('E_tot = {:6.5f}'.format(last_ccdata.scfenergies[k]))
+                        last_ccdata.writexyz(add_index(task.folder + '/' + task.name + '.xyz', zerobased=True,
+                                                       respect_file_extension=True), indices=k)
 
                 # Check if task is failed
                 for fail_key, fail_val in scenarios_dct['fails'].items():

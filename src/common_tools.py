@@ -31,9 +31,10 @@ def add_index(fname, respect_file_extension=True, zerobased=False):
         fname_next = fname + '_0'
     else:
         fname_next = fname
+    k = 1
     while os.path.exists(fname_next + dot_file_extension):
-        k = 1
         fname_next = fname + '_' + str(k)
+        k += 1
     return fname_next + dot_file_extension
 
 
