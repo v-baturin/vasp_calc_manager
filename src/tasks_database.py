@@ -210,7 +210,7 @@ class GauCalcDB(list):
                     task.status = 'P'
                     continue
                 last_ccdata, atoms = parse_gout(logfile)  # Check if at least one SCF cycle is done
-                if last_ccdata:
+                if last_ccdata and hasattr(last_ccdata, 'scfenergies'):
                     task.old_coords = task.gjf['molstruct'].copy()
                     task.gjf['molstruct'] = atoms
                     task.ccdata = last_ccdata
@@ -219,6 +219,8 @@ class GauCalcDB(list):
                         last_ccdata.metadata['comments'].append('E_tot = {:6.5f}'.format(last_ccdata.scfenergies[k]))
                         last_ccdata.writexyz(add_index(task.folder + '/' + task.name + '.xyz', zerobased=True,
                                                        respect_file_extension=True), indices=k)
+                else:
+                    task.gjf['molstruct'] = task.old_coords
 
                 # Check if task is failed
                 for fail_key, fail_val in scenarios_dct['fails'].items():
