@@ -139,7 +139,7 @@ class GauCalcDB(list):
                 work_gjf_name = sh_execute('ls ' + curr_folder_full + '/*.gjf').strip()
                 jobfnamesearch = glob.glob(curr_folder_full + '/*job*')
                 if jobfnamesearch:
-                    jobfname = jobfnamesearch[0]
+                    jobfname = jobfnamesearch[0].split('/')[-1]
                 else:
                     jobfname = 'jobfile.sh'
                 gjf = Gjf(work_gjf_name)
