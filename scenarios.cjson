@@ -57,7 +57,7 @@
   "restart":   {"corrector": {"route": {"scf": {"yqc": null}}}},
   "errors":    {"low_phys_mem": {"flags": "could not allocate memory",
                                 "tail": 20, "msg": "Could not allocate memory",
-                                "corrector": {"command": {"mem": "4000-100<1000"}}},
+                                "corrector": {"command": {"mem": "4000-100>1000"}}},
                "low_alloc_mem": {"flags": "Out-of-memory error", "tail": false,
                                  "msg": "Insufficient memory allocated",
                                  "corrector": {"command": {"mem": "1000+1000<10000"}}},

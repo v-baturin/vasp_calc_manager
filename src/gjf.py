@@ -175,6 +175,8 @@ class Gjf(dict):
                         self[corr_key] = Gjf.apply_incremental_corrector(corr_val, value=orig_val, key=corr_key)
                     else:
                         self[corr_key] = corr_val  # For non-route sections
+                        warnings.warn('In ' + str(root_name) + ' ' + corr_key + ': '
+                                      + str(orig_val) + ' is replaced by ' + str(corr_val))
                 elif corr_val is None:
                     pass
                 else:
