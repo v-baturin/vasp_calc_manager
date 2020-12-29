@@ -248,7 +248,7 @@ class GauCalcDB(list):
 
                 # Two residual cases:
                 if task.status == 'R':
-                    error_line = sh_execute("grep 'Error termination via' " + logfile)
+                    error_line = sh_execute("tail -30 " + logfile + " | grep 'Error termination via' ")
                     if error_line:  # 1. Unexpected error
                         print(task.name + ': Unexpected error: ' + error_line)
                         task.status = 'F'
