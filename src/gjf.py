@@ -122,6 +122,7 @@ class Gjf(dict):
             else:
                 if not os.path.isfile(gjfdata):
                     raise FileNotFoundError('File ' + gjfdata + " doesn't exist")
+                print('Parsing ' + gjfdata)
                 with open(gjfdata) as f:
                     block = ''.join(f)
                 self.update(Gjf.gjfstring2dict(block))
