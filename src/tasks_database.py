@@ -214,8 +214,7 @@ class GauCalcDB(list):
                         last_ccdata.writexyz(add_index(task.folder + '/' + task.name + '.xyz', zerobased=True,
                                                        respect_file_extension=True), indices=k)
                     # Check if task is done
-                    if isfile(logfile) and \
-                            checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
+                    if checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
                         print(task.name + ': DONE')
                         task.status = 'D'
                         continue
