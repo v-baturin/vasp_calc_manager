@@ -187,13 +187,6 @@ class GauCalcDB(list):
 
             logfile = task.folder + '/' + task.out
 
-            # Check if task is done
-            if isfile(logfile) and \
-                    checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
-                print(task.name + ': DONE')
-                task.status = 'D'
-                continue
-
             if task.k_iter >= self.maxiter:
                 print(task.name + ': MaxIter = ' + str(self.maxiter) + ' exceeded. Task failed')
                 task.status = 'F'
@@ -209,6 +202,7 @@ class GauCalcDB(list):
                     print("No log file generated! Check " + task.full_gjf_path)
                     task.status = 'P'
                     continue
+
                 last_ccdata, atoms = parse_gout(logfile)  # Check if at least one SCF cycle is done
                 if last_ccdata and hasattr(last_ccdata, 'scfenergies'):
                     task.old_coords = task.gjf['molstruct'].copy()
@@ -219,6 +213,12 @@ class GauCalcDB(list):
                         last_ccdata.metadata['comments'].append('E_tot = {:6.5f}'.format(last_ccdata.scfenergies[k]))
                         last_ccdata.writexyz(add_index(task.folder + '/' + task.name + '.xyz', zerobased=True,
                                                        respect_file_extension=True), indices=k)
+                    # Check if task is done
+                    if isfile(logfile) and \
+                            checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
+                        print(task.name + ': DONE')
+                        task.status = 'D'
+                        continue
                 else:
                     task.gjf['molstruct'] = task.old_coords
 
@@ -240,7 +240,7 @@ class GauCalcDB(list):
                 # Prepare restart for erroneous tasks
                 for err_key, err_val in scenarios_dct['errors'].items():
                     if checkflag(err_val['flags'], logfile, tail=err_val['tail']):
-                        print(task.name + ': Applying corrector for error:' +  err_val['msg'])
+                        print(task.name + ': Applying corrector for error:' + err_val['msg'])
                         task.gjf.recurs_adjust(err_val['corrector'])
                         task.status = 'P'
                         task.k_iter += 1
