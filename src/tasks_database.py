@@ -288,8 +288,6 @@ class GauCalcDB(list):
         return stats
 
     def dump(self, filename_pkl='database.pkl', filename_en='energies.txt'):
-        with open(filename_pkl, 'wb') as pkl_fid:
-            pickle.dump(self, pkl_fid)
         with open(filename_en, 'w') as en_fid:
             en_fid.write('*' * 10 + '{:%Y-%m-%d %H:%M}'.format(datetime.now()) + '*' * 10 + '\n')
             en_fid.write('SCF energies in eV:\n')
@@ -300,6 +298,8 @@ class GauCalcDB(list):
                     last_ccdata, atoms = parse_gout(task.folder + '/' + task.out)
                     task.ccdata = last_ccdata
                     en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
+        with open(filename_pkl, 'wb') as pkl_fid:
+            pickle.dump(self, pkl_fid)
 
 
 # if __name__ == '__main__':
