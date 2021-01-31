@@ -296,6 +296,10 @@ class GauCalcDB(list):
             for task in self:
                 if task.ccdata and hasattr(task.ccdata, 'scfenergies'):
                     en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
+                elif task.status == 'D':
+                    last_ccdata, atoms = parse_gout(task.folder + '/' + task.out)
+                    task.ccdata = last_ccdata
+                    en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
 
 
 # if __name__ == '__main__':
