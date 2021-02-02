@@ -11,17 +11,21 @@ from tools_stability.aux_routines import list_fmt2table, table2list_fmt
 import time
 from src.common_tools import cjson_load
 from src.tasks_database import GauCalcDB
+from src.ext_software_io import parse_gout
+from ase.io import read, write
+from ase import Atoms
 
 element_nos = (6, 1)
-resfolder = '/home/vsbat/SYNC/00__WORK/20191022_CH_project/res'
+resfolder = '.'
 if not os.path.exists(resfolder):
     os.makedirs(resfolder)
 
 list_fmt_data = []
-db_pkl_fnames = ['ark_vb.pkl', 'ark_sl.pkl', 'ark_an.pkl', 'oleg_vb.pkl', 'oleg_sl.pkl', 'oleg_N.pkl', 'oleg_vb_pureC.pkl']
+db_pkl_fnames = ['database.pkl']
 for db_file in db_pkl_fnames:
     master_dict = {}
     with open(db_file, 'rb') as db_fid:
+        res_poscars = db_file.split('.')[0] + '_res_POSCARS'
         database = pickle.load(db_fid)
         for task in database:
             try:
@@ -29,6 +33,8 @@ for db_file in db_pkl_fnames:
             except AttributeError:
                 print(task.name + ' in ' + db_file + ' : job failed')
                 continue
+            write(res_poscars, Atoms(positions=task.ccdata.atomcoords[-1], numbers=task.ccdata.atomnos), append=True,
+                  vasp5=True)
             if comp in master_dict:
                 master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
                 master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
