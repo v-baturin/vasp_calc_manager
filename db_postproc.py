@@ -34,7 +34,7 @@ for db_file in db_pkl_fnames:
                 print(task.name + ' in ' + db_file + ' : job failed')
                 continue
             coords = task.ccdata.atomcoords[-1]
-            coords -= np.sum(coords, axis=1)
+            coords -= np.sum(coords, axis=0)
             numbers = task.ccdata.atomnos
             cell = np.diag([np.max(coords[:, 0]) - np.max(coords[:, 0]) + 15,
                             np.max(coords[:, 1]) - np.max(coords[:, 1]) + 15,
