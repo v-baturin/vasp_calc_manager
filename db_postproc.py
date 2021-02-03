@@ -33,7 +33,14 @@ for db_file in db_pkl_fnames:
             except AttributeError:
                 print(task.name + ' in ' + db_file + ' : job failed')
                 continue
-            write(res_poscars, Atoms(positions=task.ccdata.atomcoords[-1], numbers=task.ccdata.atomnos), append=True,
+            coords = task.ccdata.atomcoords[-1]
+            coords -= np.sum(coords, axis=1)
+            numbers = task.ccdata.atomnos
+            cell = np.diag([np.max(coords[:, 0]) - np.max(coords[:, 0]) + 15,
+                            np.max(coords[:, 1]) - np.max(coords[:, 1]) + 15,
+                            np.max(coords[:, 2]) - np.max(coords[:, 2]) + 15])
+            pbc = np.ones(3, dtype=bool)
+            write(res_poscars, Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell), append=True,
                   vasp5=True)
             if comp in master_dict:
                 master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
@@ -58,10 +65,8 @@ for db_file in db_pkl_fnames:
         val['ccdata'][lowest].writexyz(resfolder + '/' + val['taskname'][lowest] + '.xyz')
 
 # list_fmt_data = np.array(list_fmt_data)
-np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_data)[:,:-1])
-list_fmt2table(np.array(list_fmt_data)[:,:-1], outfile=resfolder + '/en_table.txt')
+np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_data)[:, :-1])
+list_fmt2table(np.array(list_fmt_data)[:, :-1], outfile=resfolder + '/en_table.txt')
 with open(resfolder + '/stats.txt', 'w') as stats_fid:
     for dt in list_fmt_data:
         stats_fid.write('%d %d %.6f %s \n' % tuple(dt))
-
-
