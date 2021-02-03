@@ -5,4 +5,8 @@ RECALC*
 __pycache__
 *.pyc
 src/__pycache__
+log
+DONE
+STOP
+
 
