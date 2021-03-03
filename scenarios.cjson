@@ -99,8 +99,19 @@
                              "corrector" : {}},
                 "bad_input": {"flags": "Error termination via.*l101", "tail": 50,
                              "msg": "Bad input file",
-                             "corrector": {"route": {"scf": {"yqc": null}}}}
+                             "corrector": {"route": {"scf": {"yqc": null}}}},
+                "El conv failed 508": {"flags": ["Error termination", "Convergence failure", "l508.exe"], "tail": 10,
+                                    "msg": "Geometry error",
+                                    "corrector": {"command": {"mem": "1000+1000<10000"},
+                                                  "route": {"scf": {"yqc": null,
+                                                                    "maxcycle":"100+50<1000"
+                                                                    }
+                                                           }
+                                                 }
+                                   }
                },
   "fails":     {"bad_basis": {"flags": "Atomic number out of range", "tail": 50,
                              "msg"  : "Insufficient basis",
-                             "corrector" : {}}}}
+                             "corrector" : {}},
+               }
+}
