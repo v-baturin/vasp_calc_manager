@@ -142,10 +142,16 @@ class GauCalcDB(list):
                     jobfname = jobfnamesearch[0].split('/')[-1]
                 else:
                     jobfname = 'jobfile.sh'
-                out_fname = glob.glob(curr_folder_full + '/' + outfile_pattern)[0].split('/')[-1]
+                out_fname_search = glob.glob(curr_folder_full + '/' + outfile_pattern)
+                if out_fname_search:
+                    out_fname = out_fname_search[0].split('/')[-1]
+                    newstatus = 'L'
+                else:
+                    out_fname = outfile_pattern.replace('*', 'log')
+                    newstatus = 'P'
                 gjf = Gjf(work_gjf_name)
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=curr_folder, jobfile=jobfname,
-                               machine=machine, machine_dict=machine_dict, out_fname=out_fname)
+                               machine=machine, machine_dict=machine_dict, out_fname=out_fname, status=newstatus)
                 self.append(task)
                 n_logs += 1
             if n_logs == 0:
@@ -193,7 +199,7 @@ class GauCalcDB(list):
                 task.status = 'F'
                 continue
 
-            if task.status in ('R', 'F'):
+            if task.status in ('R', 'F', 'L'):
                 # Skip running tasks
                 if task.isrunning():
                     continue
