@@ -236,7 +236,7 @@ class GauCalcDB(list):
                     if checkflag(fail_val['flags'], logfile, tail=fail_val['tail']):
                         corrected_gjf = task.gjf.copy()
                         corrected_gjf.recurs_adjust(fail_val['corrector'])
-                        if corrected_gjf == task.gjf and task.status == 'R':
+                        if corrected_gjf == task.gjf and task.status in ['R', 'L']:
                             print(task.name + ': Task failed. Error: ' + fail_val['msg'])
                             task.status = 'F'
                         elif task.status == 'F':
@@ -256,7 +256,7 @@ class GauCalcDB(list):
                         continue
 
                 # Two residual cases:
-                if task.status == 'R':
+                if task.status in ['R', 'L']:
                     error_line = sh_execute("tail -30 " + logfile + " | grep 'Error termination via' ")
                     if error_line:  # 1. Unexpected error
                         print(task.name + ': Unexpected error: ' + error_line)
@@ -268,7 +268,7 @@ class GauCalcDB(list):
 
     def get_stats(self, stats_file='stats.txt', verb=False):
 
-        stats = {'P': 0, 'R': 0, 'D': 0, 'F': 0}  # Pending, Running, Done, Failed
+        stats = {'P': 0, 'R': 0, 'D': 0, 'F': 0, 'L':0}  # Pending, Running, Done, Failed, Loaded
         fullstory = []
 
         for task in self:
@@ -284,7 +284,7 @@ class GauCalcDB(list):
                 for tsk in fullstory:
                     stats_fid.write(tsk + '\n')
 
-        if stats['P'] == 0 and stats['R'] == 0:
+        if stats['P'] == 0 and stats['R'] == 0 and stats['L'] == 0:
             print('No running or pending tasks!\n')
             if stats['F'] > 0:
                 print('We\'ve done all we could with this input\n')
@@ -294,7 +294,8 @@ class GauCalcDB(list):
                 print('Congratulations! All done!')
                 sh_execute('touch DONE')
 
-        print("Pending: {}, Running: {}, Done: {}, Failed: {}".format(stats['P'], stats['R'], stats['D'], stats['F']))
+        print("Pending: {}, Running: {}, Done: {}, Failed: {}, Loaded: {}".format(
+            stats['P'], stats['R'], stats['D'], stats['F'], stats['L']))
         return stats
 
     def dump(self, filename_pkl='database.pkl', filename_en='energies.txt'):
