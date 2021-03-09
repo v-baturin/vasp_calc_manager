@@ -142,9 +142,10 @@ class GauCalcDB(list):
                     jobfname = jobfnamesearch[0].split('/')[-1]
                 else:
                     jobfname = 'jobfile.sh'
+                out_fname = glob.glob(curr_folder_full + '/' + outfile_pattern)[0].split('/')[-1]
                 gjf = Gjf(work_gjf_name)
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=curr_folder, jobfile=jobfname,
-                               machine=machine, machine_dict=machine_dict)
+                               machine=machine, machine_dict=machine_dict, out_fname=out_fname)
                 self.append(task)
                 n_logs += 1
             if n_logs == 0:
