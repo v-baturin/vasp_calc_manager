@@ -68,8 +68,11 @@ class GauTask:
         return self.folder + '/' + self.gjffilename
 
     def isrunning(self):
-        cur_queue = sh_execute(self.machine_dict['queue'])
-        return self.job_id in cur_queue
+        if self.job_id:
+            cur_queue = sh_execute(self.machine_dict['queue'])
+            return self.job_id in cur_queue
+        else:
+            return False
 
     def copyfiles(self):
         if not os.path.isdir(self.folder):
