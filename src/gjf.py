@@ -201,7 +201,7 @@ class Gjf(dict):
                 if isinstance(corr_val, dict):
                     step = recursive_map_to_keys(Gjf.remove_minus, corr_val)
                     self[new_corr_key] = recursively_map_to_vals(Gjf.getdefaults, step)
-                elif isinstance(corr_val, str) and re.match(r'(-?\d+\+-?\d+<-?\d+)|(-?\d+--?\d+>-?\d+)',corr_val):
+                elif isinstance(corr_val, str) and re.match(r'(-?\d+\+-?\d+<-?\d+)|(-?\d+--?\d+>-?\d+)', corr_val):
                     self[new_corr_key] = Gjf.getdefaults(corr_val)
                 else:
                     self[new_corr_key] = corr_val
@@ -222,23 +222,24 @@ class Gjf(dict):
             route_str = dict2gauformat(self['route'], gau_route=True)
             fid.write(route_str + '\n')
 
-            # Job name
-            if 'jobname' in self.keys():
-                fid.write('\n' + self['jobname'] + '\n')
+            if route_str != '#p restart':
+                # Job name
+                if 'jobname' in self.keys():
+                    fid.write('\n' + self['jobname'] + '\n')
 
-            # Charge multiplicity
-            if 'charge_mult' in self.keys():
-                fid.write('\n' + self['charge_mult'] + '\n')
+                # Charge multiplicity
+                if 'charge_mult' in self.keys():
+                    fid.write('\n' + self['charge_mult'] + '\n')
 
-            # Molecular structure
-            if 'molstruct' in self.keys():
-                fid.write(atoms_2_str(self['molstruct']) + '\n')
+                # Molecular structure
+                if 'molstruct' in self.keys():
+                    fid.write(atoms_2_str(self['molstruct']) + '\n')
 
 
-            if 'last_section' in self.keys():
-                fid.write('\n' + self['last_section'] + '\n')
+                if 'last_section' in self.keys():
+                    fid.write('\n' + self['last_section'] + '\n')
 
-            fid.write('\n')
+                fid.write('\n')
 
 
 if __name__ == '__main__':
@@ -261,10 +262,14 @@ if __name__ == '__main__':
     # gj3.recurs_adjust(testcorr)
     # print(gj3)
 
-    gjf_fname = '../gjf_templates/CH.gjf'
-    gj4 = Gjf(gjf_fname)
-    print(gj4['command'])
+    # gjf_fname = '../gjf_templates/CH.gjf'
+    # gj4 = Gjf(gjf_fname)
+    # print(gj4['command'])
 
-    # gjf_fname = '/home/vsbat/mnt/arkuda_VBATURIN/PROJECT_PdBi/TS/TS_attempt2/Kurzina/TS_for_1st_step/TS_for_1st_step.gjf'
-    # gj5 = Gjf(gjf_fname)
-    # print(gj5['command'])
+    gjf_fname = '/home/vsbat/mnt/arkuda_VBATURIN/PROJECT_PdBi/TS/TS_attempt2/Kurzina/TS_for_1st_step/TS_for_1st_step.gjf'
+    gj5 = Gjf(gjf_fname)
+
+    corrector = {"route=": {"restart": None}}
+    gj5.recurs_adjust(corrector)
+    gj5.save('/home/vsbat/Desktop/testgj')
+    print(gj5['command'])

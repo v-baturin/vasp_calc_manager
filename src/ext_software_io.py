@@ -1,6 +1,7 @@
 import re
 import json
 import numpy as np
+from copy import deepcopy
 from ase import Atoms
 from ase.io import read as ase_read
 from cclib.io import ccread
@@ -72,8 +73,10 @@ def gauformat2dict(string: str, gau_route=False, case_sensitive=False):
 
 def dict2gauformat(dct_param: dict, gau_route=False):
     txt = ''
-    dct = dct_param.copy()
+    dct = deepcopy(dct_param)
     if gau_route:
+        if dct_param == {'restart': None}:
+            return '#p restart'
         txt = txt + '#p ' + dct['approach_basis']
         del dct['approach_basis']
     for upper_key, upper_val in dct.items():
@@ -86,7 +89,7 @@ def dict2gauformat(dct_param: dict, gau_route=False):
             else:
                 txt += ('=(' + recursive_print(upper_val) + ')')
         elif bool(upper_val):
-            txt += ('=' + upper_val)
+            txt += ('=' + str(upper_val))
     return txt.replace(',)', ')')
 
 
