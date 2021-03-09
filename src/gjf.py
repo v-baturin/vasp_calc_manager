@@ -5,8 +5,8 @@ import math
 import numbers
 import os.path
 import copy
-from .common_tools import sh_execute, add_separator, flatten, recursively_map_to_vals, recursive_map_to_keys
-from .ext_software_io import gauformat2dict, dict2gauformat, xyz_2atoms, atoms_2_str
+from src.common_tools import recursively_map_to_vals, recursive_map_to_keys
+from src.ext_software_io import gauformat2dict, dict2gauformat, xyz_2atoms, atoms_2_str
 
 
 class Gjf(dict):
@@ -49,15 +49,18 @@ class Gjf(dict):
             curr_gjf['jobname'] = jobname[0]
 
         # Charge-multiplicity section
-        chmult = re.findall('(?:\n\s*)(-?\d+\s+\d+)', block)
+        chmult = re.findall('(?:\n\n)(-?\d+[\t ]+\d+[\t ]*)$', block, re.MULTILINE| re.DOTALL)
         if chmult:
             curr_gjf['charge_mult'] = chmult[0]
 
         # Molecular structure section
-        molstruct = '\n'.join(re.findall(r'([A-Z][a-z]?\s+(?:[-0-9.]+.*){3})', block))
+        molstruct = re.findall(r'((?:^[\t ]*[A-Z][a-z]?[\t ]+(?:[-0-9.]+.*){3}\n)+)', block, re.MULTILINE)
         if molstruct:
             # Atoms object
-            curr_gjf['molstruct'] = xyz_2atoms(molstruct)
+            curr_gjf['molstruct'] = xyz_2atoms(molstruct[0])
+        if len(molstruct) == 2:
+            print('Two geometries encountered')
+
 
         # Lasts section - custom basis, connectivity, wfn-file, etc
         last_section = re.findall('(?:-?\d+\s+\d+\s*.*?\n\n)(.*)(?=\n\n)', block, re.MULTILINE| re.DOTALL)
@@ -257,6 +260,11 @@ if __name__ == '__main__':
     # gj3 = Gjf(testorig)
     # gj3.recurs_adjust(testcorr)
     # print(gj3)
+
     gjf_fname = '../gjf_templates/CH.gjf'
     gj4 = Gjf(gjf_fname)
     print(gj4['command'])
+
+    # gjf_fname = '/home/vsbat/mnt/arkuda_VBATURIN/PROJECT_PdBi/TS/TS_attempt2/Kurzina/TS_for_1st_step/TS_for_1st_step.gjf'
+    # gj5 = Gjf(gjf_fname)
+    # print(gj5['command'])
