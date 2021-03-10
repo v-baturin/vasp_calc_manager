@@ -52,12 +52,16 @@ class Gjf(dict):
         chmult = re.findall('(?:\n\n)(-?\d+[\t ]+\d+[\t ]*)$', block, re.MULTILINE| re.DOTALL)
         if chmult:
             curr_gjf['charge_mult'] = chmult[0]
+        else:
+            curr_gjf['charge_mult'] = None
 
-        # Molecular structure section
+            # Molecular structure section
         molstruct = re.findall(r'((?:^[\t ]*[A-Z][a-z]?[\t ]+(?:[-0-9.]+.*){3}\n)+)', block, re.MULTILINE)
         if molstruct:
             # Atoms object
             curr_gjf['molstruct'] = xyz_2atoms(molstruct[0])
+        else:
+            curr_gjf['molstruct'] = None
         if len(molstruct) == 2:
             print('Two geometries encountered')
 
