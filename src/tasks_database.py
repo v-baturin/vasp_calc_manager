@@ -36,7 +36,7 @@ class GauTask:
     #                       'runcmd': r'', 'jobid': '\d+', 'queue': "ps -x | grep -Po '^\s*\d+'"}}
 
     def __init__(self, gjf=None, folder=None, status='P', k_iter=0, ccdata=None, job_id=None, name=None,
-                 jobfile=None, machine='local', out_fname='log', machine_dict=None):
+                 jobfile=None, machine='local', out_fname='log', machine_dict=None, chk_file=None):
 
         if not machine_dict:
             machine_dict = {'local': {'jobtemplate': 'job_templates/local.sh',
@@ -47,7 +47,9 @@ class GauTask:
         self.k_iter = k_iter
         self.status = status
         self.gjf = gjf.copy()
-        self.gjf.recurs_adjust({'command': {'chk=': name + '.chk'}, 'jobname=': name})
+        if not chk_file:
+            chk_file = name + '.chk'
+        self.gjf.recurs_adjust({'command': {'chk=': chk_file}, 'jobname=': name})
         if 'molstruct' in gjf:
             self.old_coords = gjf['molstruct'].copy()
         self.folder = folder  # Full path
@@ -141,11 +143,13 @@ class GauCalcDB(list):
                 curr_folder_full = str(k_log_file.parent)
                 curr_folder = str(k_log_file.parts[-2])
                 work_gjf_name = sh_execute('ls ' + curr_folder_full + '/*.gjf').strip()
+
                 jobfnamesearch = glob.glob(curr_folder_full + '/*.sh')
                 if jobfnamesearch:
                     jobfname = jobfnamesearch[0].split('/')[-1]
                 else:
                     jobfname = 'jobfile.sh'
+
                 out_fname_search = glob.glob(curr_folder_full + '/' + outfile_pattern)
                 if out_fname_search:
                     out_fname = out_fname_search[0].split('/')[-1]
@@ -153,10 +157,15 @@ class GauCalcDB(list):
                 else:
                     out_fname = outfile_pattern.replace('*', 'log')
                     newstatus = 'P'
+
+                chksearch = glob.glob(curr_folder_full + '/*.chk')
+                chk_fname = chksearch[0].split('/')[-1] if chksearch else None
+
                 gjf = Gjf(work_gjf_name)
                 name = work_gjf_name.split('/')[-1].split('.')[0]
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=name, jobfile=jobfname,
-                               machine=machine, machine_dict=machine_dict, out_fname=out_fname, status=newstatus)
+                               machine=machine, machine_dict=machine_dict, out_fname=out_fname, chk_file=chk_fname,
+                               status=newstatus)
                 self.append(task)
                 n_logs += 1
             if n_logs == 0:
