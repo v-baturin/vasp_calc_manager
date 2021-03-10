@@ -48,7 +48,7 @@ class GauTask:
         self.status = status
         self.gjf = gjf.copy()
         self.gjf.recurs_adjust({'command': {'chk=': name + '.chk'}, 'jobname=': name})
-        self.old_coords = gjf['molstruct'].copy()
+        self.old_coords = gjf['molstruct'].copy() if gjf['molstruct'] else gjf['molstruct']
         self.folder = folder  # Full path
         self.name = name  # E.g. Cd2Se10_3
         self.jobfile = jobfile
