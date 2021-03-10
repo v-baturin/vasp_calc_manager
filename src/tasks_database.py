@@ -153,7 +153,8 @@ class GauCalcDB(list):
                     out_fname = outfile_pattern.replace('*', 'log')
                     newstatus = 'P'
                 gjf = Gjf(work_gjf_name)
-                task = GauTask(gjf=gjf, folder=curr_folder_full, name=curr_folder, jobfile=jobfname,
+                name = work_gjf_name.split('/')[-1].split('.')[0]
+                task = GauTask(gjf=gjf, folder=curr_folder_full, name=name, jobfile=jobfname,
                                machine=machine, machine_dict=machine_dict, out_fname=out_fname, status=newstatus)
                 self.append(task)
                 n_logs += 1
