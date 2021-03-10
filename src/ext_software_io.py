@@ -49,6 +49,8 @@ def gauformat2dict(string: str, gau_route=False, case_sensitive=False):
             if re.match('[^/ ()]+/.*', item):
                 approach_basis = item
                 del list_from_string[k]
+            else:
+                approach_basis = None
         string = ' '.join(list_from_string)
     string = re.sub(r'([^=])\(', r'\1=(', string)  # Inserting '=' sign for homogeneity. (par(vals) -> par=(vals))
     list_from_string = string.split()
