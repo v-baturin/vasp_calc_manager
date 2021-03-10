@@ -168,9 +168,12 @@ def gaussian_in_2_Atoms(fd):
 
 def atoms_2_str(atms):
     output = []
-    for at in atms:
-        output.append('{:<10s}{:20.10f}{:20.10f}{:20.10f}'.format(at.symbol, *at.position))
-    return '\n'.join(output)
+    if atms:
+        for at in atms:
+            output.append('{:<10s}{:20.10f}{:20.10f}{:20.10f}'.format(at.symbol, *at.position))
+        return '\n'.join(output)
+    else:
+        return ['']
 
 
 def parse_gout(logfile):
