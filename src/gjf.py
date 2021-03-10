@@ -240,7 +240,7 @@ class Gjf(dict):
                 if 'last_section' in self.keys():
                     fid.write('\n' + self['last_section'] + '\n')
 
-                fid.write('\n')
+            fid.write('\n')
 
 
 if __name__ == '__main__':
