@@ -217,7 +217,10 @@ class GauCalcDB(list):
 
                 last_ccdata, atoms = parse_gout(logfile)  # Check if at least one SCF cycle is done
                 if last_ccdata and hasattr(last_ccdata, 'scfenergies'):
-                    task.old_coords = task.gjf['molstruct'].copy()
+                    if 'molstruct' in task.gjf:
+                        task.old_coords = task.gjf['molstruct'].copy()
+                    else:
+                        task.old_coords = None
                     task.gjf['molstruct'] = atoms
                     task.ccdata = last_ccdata
                     last_ccdata.metadata['comments'] = []
