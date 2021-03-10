@@ -45,18 +45,22 @@ class Gjf(dict):
 
         # Job name section
         jobname = re.findall('(?:#.*?\n\n)(.*?)(?=\n\n)', block, re.MULTILINE| re.DOTALL)
-        curr_gjf['jobname'] = jobname[0] if bool(jobname) else ''
+        if bool(jobname):
+            curr_gjf['jobname'] = jobname[0]
 
         # Charge-multiplicity section
         chmult = re.findall('(?:\n\n)(-?\d+[\t ]+\d+[\t ]*)$', block, re.MULTILINE| re.DOTALL)
-        curr_gjf['charge_mult'] = chmult[0] if chmult else ''
+        if chmult:
+            curr_gjf['charge_mult'] = chmult[0]
 
         # Molecular structure section
         molstruct = re.findall(r'((?:^[\t ]*[A-Z][a-z]?[\t ]+(?:[-0-9.]+.*){3}\n)+)', block, re.MULTILINE)
-        curr_gjf['molstruct'] = xyz_2atoms(molstruct[0]) if molstruct else None
+        if molstruct:
+            curr_gjf['molstruct'] = xyz_2atoms(molstruct[0])
+        else:
+            molstruct = None
         if len(molstruct) == 2:
             print('Two geometries encountered')
-
 
         # Lasts section - custom basis, connectivity, wfn-file, etc
         last_section = re.findall('(?:-?\d+\s+\d+\s*.*?\n\n)(.*)(?=\n\n)', block, re.MULTILINE| re.DOTALL)
