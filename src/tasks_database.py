@@ -242,7 +242,7 @@ class GauCalcDB(list):
                         print(task.name + ': DONE')
                         task.status = 'D'
                         continue
-                else:
+                elif hasattr(task, 'old_coords'):
                     task.gjf['molstruct'] = task.old_coords
 
                 # Check if task is failed
