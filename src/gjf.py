@@ -57,10 +57,11 @@ class Gjf(dict):
         molstruct = re.findall(r'((?:^[\t ]*[A-Z][a-z]?[\t ]+(?:[-0-9.]+.*){3}\n)+)', block, re.MULTILINE)
         if molstruct:
             curr_gjf['molstruct'] = xyz_2atoms(molstruct[0])
+            if len(molstruct) == 2:
+                print('Two geometries encountered')
         else:
             molstruct = None
-        if len(molstruct) == 2:
-            print('Two geometries encountered')
+
 
         # Lasts section - custom basis, connectivity, wfn-file, etc
         last_section = re.findall('(?:-?\d+\s+\d+\s*.*?\n\n)(.*)(?=\n\n)', block, re.MULTILINE| re.DOTALL)
