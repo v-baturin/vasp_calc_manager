@@ -9,7 +9,7 @@ import time
 from src.common_tools import cjson_load
 from src.tasks_database import GauCalcDB
 
-sys.stdout = open('log', 'w')
+sys.stdout = open('log', 'a')
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
