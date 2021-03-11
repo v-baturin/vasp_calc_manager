@@ -226,11 +226,11 @@ class Gjf(dict):
             if route_str != '#p restart':
                 # Job name
                 if 'jobname' in self.keys():
-                    fid.write('\n' + self['jobname'] + '\n')
+                    fid.write('\n' + self['jobname'].strip() + '\n')
 
                 # Charge multiplicity
                 if 'charge_mult' in self.keys():
-                    fid.write('\n' + self['charge_mult'] + '\n')
+                    fid.write('\n' + self['charge_mult'].strip() + '\n')
 
                 # Molecular structure
                 if 'molstruct' in self.keys():
