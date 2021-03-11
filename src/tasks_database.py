@@ -244,6 +244,7 @@ class GauCalcDB(list):
                     if checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
                         print(task.name + ': DONE')
                         task.status = 'D'
+                        sh_execute('rm ' + task.folder + '/*.rwf')
                         continue
                 elif hasattr(task, 'old_coords'):
                     task.gjf['molstruct'] = task.old_coords
