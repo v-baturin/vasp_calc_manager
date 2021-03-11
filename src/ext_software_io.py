@@ -45,12 +45,14 @@ def gauformat2dict(string: str, gau_route=False, case_sensitive=False):
         string = re.sub(r'^#\w? +', '', string)  # removing standard beginning with trailing spaces '#p  '
         string = re.sub(r'^#', '', string)  # removing single hash before approach section like e.g. in #b3lyp/cam
         list_from_string = string.split()
+
+        # Search for theory level substring ('b3lyp/lanl2dz')
+        approach_basis = ''
         for k, item in enumerate(list_from_string):
             if re.match('[^/ ()]+/.*', item):
                 approach_basis = item
                 del list_from_string[k]
-            else:
-                approach_basis = ''
+
         string = ' '.join(list_from_string)
     string = re.sub(r'([^=])\(', r'\1=(', string)  # Inserting '=' sign for homogeneity. (par(vals) -> par=(vals))
     list_from_string = string.split()
