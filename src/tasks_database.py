@@ -5,7 +5,7 @@ import glob
 from datetime import datetime
 from os.path import isfile
 from pathlib import Path
-from .ext_software_io import read_poscars, parse_gout
+from .ext_software_io import read_poscars, parse_gout, dict2gauformat
 from .gjf import Gjf
 from .common_tools import add_index, sh_execute, checkflag, cjson_load, mk_new_dir
 
@@ -47,6 +47,7 @@ class GauTask:
         self.k_iter = k_iter
         self.status = status
         self.gjf = gjf.copy()
+        self.previousgjf = gjf.copy()
         if not chk_file:
             chk_file = name + '.chk'
         self.gjf.recurs_adjust({'command': {'chk=': chk_file}, 'jobname=': name})
@@ -224,7 +225,9 @@ class GauCalcDB(list):
                     task.status = 'P'
                     continue
 
-                last_ccdata, atoms = parse_gout(logfile)  # Check if at least one SCF cycle is done
+                last_ccdata, atoms = parse_gout(logfile)
+
+                # Update energy and geometry info if at least one SCF is done
                 if last_ccdata and hasattr(last_ccdata, 'scfenergies'):
                     if 'molstruct' in task.gjf:
                         task.old_coords = task.gjf['molstruct'].copy()
@@ -246,8 +249,11 @@ class GauCalcDB(list):
                     task.gjf['molstruct'] = task.old_coords
 
                 # Check if task is failed
+                task_failed = False
                 for fail_key, fail_val in scenarios_dct['fails'].items():
                     if checkflag(fail_val['flags'], logfile, tail=fail_val['tail']):
+                        if dict2gauformat(task.gjf['route'], gau_route=True).lower() == "#p restart":
+                            task.gjf = task.previousgjf.copy()
                         corrected_gjf = task.gjf.copy()
                         corrected_gjf.recurs_adjust(fail_val['corrector'])
                         if corrected_gjf == task.gjf and task.status in ['R', 'L']:
@@ -261,13 +267,19 @@ class GauCalcDB(list):
                         continue
 
                 # Prepare restart for erroneous tasks
+                error_corrected = False
                 for err_key, err_val in scenarios_dct['errors'].items():
                     if checkflag(err_val['flags'], logfile, tail=err_val['tail']):
+                        if dict2gauformat(task.gjf['route'], gau_route=True).lower() == "#p restart":
+                            task.gjf = task.previousgjf.copy()
                         print(task.name + ': Applying corrector for error:' + err_val['msg'])
                         task.gjf.recurs_adjust(err_val['corrector'])
                         task.status = 'P'
                         task.k_iter += 1
-                        continue
+                        error_corrected = True
+                if error_corrected:
+                    task.previousgjf = task.gjf.copy()
+                    continue
 
                 # Two residual cases:
                 if task.status in ['R', 'L']:
