@@ -14,6 +14,7 @@ from src.tasks_database import GauCalcDB
 from src.ext_software_io import parse_gout
 from ase.io import read, write
 from ase import Atoms
+from glob import glob
 
 element_nos = (6, 1)
 resfolder = '.'
@@ -21,7 +22,7 @@ if not os.path.exists(resfolder):
     os.makedirs(resfolder)
 
 list_fmt_data = []
-db_pkl_fnames = ['database.pkl']
+db_pkl_fnames = [str(x) for x in glob('/home/vsbat/SYNC/00__WORK/20191022_CH_project/databases/*.pkl')]
 for db_file in db_pkl_fnames:
     master_dict = {}
     with open(db_file, 'rb') as db_fid:
@@ -60,13 +61,25 @@ for db_file in db_pkl_fnames:
         lowest = new_ind[0]
         lowest_en = val['energies'][lowest]
         changed = (lowest != 0)
-        list_fmt_data.append(list(comp) + [lowest_en] + [changed])
+        homo_indices = val['ccdata'][lowest].homos
+        if len(homo_indices) == 2:
+            gap = np.min([val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1],
+                          val['ccdata'][lowest].moenergies[1][homo_indices[1] + 1]]) - \
+                  np.max([val['ccdata'][lowest].moenergies[0][homo_indices[0]],
+                          val['ccdata'][lowest].moenergies[1][homo_indices[1]]])
+        else:
+            gap = val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1] - \
+                  val['ccdata'][lowest].moenergies[0][homo_indices[0]]
+
+        list_fmt_data.append(list(comp) + [lowest_en] + [gap] + [changed])
         val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
         val['ccdata'][lowest].writexyz(resfolder + '/' + val['taskname'][lowest] + '.xyz')
 
 # list_fmt_data = np.array(list_fmt_data)
 np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_data)[:, :-1])
-list_fmt2table(np.array(list_fmt_data)[:, :-1], outfile=resfolder + '/en_table.txt')
-with open(resfolder + '/stats.txt', 'w') as stats_fid:
+list_fmt2table(np.array(list_fmt_data)[:, [0, 1, 2]], outfile=resfolder + '/en_table.txt')
+list_fmt2table(np.array(list_fmt_data)[:, [0, 1, 3]], outfile=resfolder + '/gap_table.txt')
+with open(resfolder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(resfolder + '/CH_gaps.txt', 'w') as gaps_fid:
     for dt in list_fmt_data:
-        stats_fid.write('%d %d %.6f %s \n' % tuple(dt))
+        stats_fid.write('%d %d %.6f %.6f %s \n' % tuple(dt))
+        gaps_fid.write('%2d\t%2d\t%.6f\n' % tuple(np.array(dt)[[0, 1, 3]]))
