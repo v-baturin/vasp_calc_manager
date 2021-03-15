@@ -273,7 +273,7 @@ class GauCalcDB(list):
                     if checkflag(err_val['flags'], logfile, tail=err_val['tail']):
                         if dict2gauformat(task.gjf['route'], gau_route=True).lower() == "#p restart":
                             task.gjf = task.previousgjf.copy()
-                        print(task.name + ': Applying corrector for error:' + err_val['msg'])
+                        print(task.name + ': Applying corrector for error: ' + err_val['msg'])
                         task.gjf.recurs_adjust(err_val['corrector'])
                         task.status = 'P'
                         task.k_iter += 1
