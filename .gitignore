@@ -6,7 +6,6 @@ __pycache__
 __init__.py
 *.pyc
 src/__pycache__
-log
 DONE
 STOP
 
