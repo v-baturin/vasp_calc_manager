@@ -19,12 +19,31 @@ from glob import glob
 
 def process_db_folder(db_fold, element_nos, res_folder=None):
 
+    """
+    Utility analysing the folder containing database pkl files and returning
+    1. dictionary {(composition,): {'old_ind': [old_indices],
+                                 'energies': [energies],
+                                 'ccdata': [cclib_datas],
+                                 'taskname': [task_names]}}  # for retreiving old indices
+
+    2. list of information of lowest energy structures for each composition.
+    Each element of the list is of the following format:
+    [[composition], energy, gap, is_switched]
+    Example for C6H12, which has lowest structure different from the one obtained from :
+
+
+    @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
+    @param element_nos: tuple with periodic numbers of elements in the desired order, e.g. (6, 1) for C H
+    @param res_folder: string, a folder where all desired data will be stored
+    @return: :rtype: (dict, list)
+    """
+
     if res_folder is None:
         resfolder = '.'
     if not os.path.exists(resfolder):
         os.makedirs(resfolder)
 
-    list_fmt_data = []
+    list_fmt_best = []
     db_pkl_fnames = [str(x) for x in glob(db_fold + '/*.pkl')]
     for db_file in db_pkl_fnames:
         master_dict = {}
@@ -74,17 +93,17 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
                 gap = val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1] - \
                       val['ccdata'][lowest].moenergies[0][homo_indices[0]]
 
-            list_fmt_data.append(list(comp) + [lowest_en] + [gap] + [changed])
+            list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
             val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
             val['ccdata'][lowest].writexyz(resfolder + '/' + val['taskname'][lowest] + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
-    np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_data)[:, :-1])
-    list_fmt2table(np.array(list_fmt_data)[:, [0, 1, 2]], outfile=resfolder + '/en_table.txt')
-    list_fmt2table(np.array(list_fmt_data)[:, [0, 1, 3]], outfile=resfolder + '/gap_table.txt')
+    np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_best)[:, :-1])
+    list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 2]], outfile=resfolder + '/en_table.txt')
+    list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 3]], outfile=resfolder + '/gap_table.txt')
     with open(resfolder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(resfolder + '/CH_gaps.txt', 'w') as gaps_fid:
-        for dt in list_fmt_data:
+        for dt in list_fmt_best:
             stats_fid.write('%d %d %.6f %.6f %s \n' % tuple(dt))
             gaps_fid.write('%2d\t%2d\t%.6f\n' % tuple(np.array(dt)[[0, 1, 3]]))
 
-    return master_dict, list_fmt_data
+    return master_dict, list_fmt_best
