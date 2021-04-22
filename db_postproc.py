@@ -12,7 +12,7 @@ ptable = pt()
 element_labels = np.array(ptable.element[:])
 
 
-def process_db_folder(db_fold, element_nos, res_folder=None):
+def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=False, write_xyz=False):
 
     """
     Utility analysing the folder containing database pkl files and returning
@@ -40,9 +40,9 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
         os.makedirs(res_folder)
 
     list_fmt_best = []
+    master_dict = {}
     db_pkl_fnames = [str(x) for x in glob(db_fold + '/*.pkl')]
     for db_file in db_pkl_fnames:
-        master_dict = {}
         with open(db_file, 'rb') as db_fid:
             res_poscars = db_file.split('.')[0] + '_res_POSCARS'
             database = pickle.load(db_fid)
@@ -91,7 +91,8 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
 
             list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
             val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
-            val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
+            if write_xyz:
+                val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
     # with open(res_folder + '/stats_np.txt', 'w') as stats_
