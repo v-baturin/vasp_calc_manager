@@ -1,20 +1,15 @@
 #!python3
-import sys
-import argparse
-import socket
 import os
-import cclib
-from datetime import datetime
 import pickle
 import numpy as np
 from tools_stability.aux_routines import list_fmt2table, table2list_fmt
-import time
-from src.common_tools import cjson_load
-from src.tasks_database import GauCalcDB
-from src.ext_software_io import parse_gout
 from ase.io import read, write
 from ase import Atoms
 from glob import glob
+from cclib.parser.utils import PeriodicTable as pt
+
+ptable = pt()
+element_labels = np.array(ptable.element[:])
 
 
 def process_db_folder(db_fold, element_nos, res_folder=None):
@@ -30,7 +25,7 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
     Each element of the list is of the following format:
     [[composition], energy, gap, is_switched]
     Example for C6H12, which has lowest structure different from the one obtained from :
-
+    [[6, 1], -2255.445, 3.5, True]
 
     @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
     @param element_nos: tuple with periodic numbers of elements in the desired order, e.g. (6, 1) for C H
@@ -38,10 +33,11 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
     @return: :rtype: (dict, list)
     """
 
+    element_symbols = tuple(element_labels[i] for i in element_nos)
     if res_folder is None:
-        resfolder = '.'
-    if not os.path.exists(resfolder):
-        os.makedirs(resfolder)
+        res_folder = '.'
+    if not os.path.exists(res_folder):
+        os.makedirs(res_folder)
 
     list_fmt_best = []
     db_pkl_fnames = [str(x) for x in glob(db_fold + '/*.pkl')]
@@ -95,15 +91,22 @@ def process_db_folder(db_fold, element_nos, res_folder=None):
 
             list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
             val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
-            val['ccdata'][lowest].writexyz(resfolder + '/' + val['taskname'][lowest] + '.xyz')
+            val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
-    np.savetxt(resfolder + '/stats_np.txt', np.array(list_fmt_best)[:, :-1])
-    list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 2]], outfile=resfolder + '/en_table.txt')
-    list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 3]], outfile=resfolder + '/gap_table.txt')
-    with open(resfolder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(resfolder + '/CH_gaps.txt', 'w') as gaps_fid:
+    # with open(res_folder + '/stats_np.txt', 'w') as stats_
+    #     np.savetxt(res_folder + '/stats_np.txt', np.array(list_fmt_best)[:, :-1])
+    if len(element_nos) == 2:
+        list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
+        list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
+    with open(res_folder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(res_folder + '/CH_gaps.txt', 'w') as gaps_fid:
+        stats_fid.write(('%s\t' * len(element_nos)) % element_symbols + 'Etot, eV\tGap, ev\n')
         for dt in list_fmt_best:
-            stats_fid.write('%d %d %.6f %.6f %s \n' % tuple(dt))
-            gaps_fid.write('%2d\t%2d\t%.6f\n' % tuple(np.array(dt)[[0, 1, 3]]))
+            stats_fid.write(('%d\t'*len(element_nos) + '%.6f\t%.6f\t%s\n') % tuple(dt[0] + dt[1:]))
+            gaps_fid.write(('%d\t'*len(element_nos) + '%.6f\n') % (tuple(dt[0]) + (dt[2],)))
 
     return master_dict, list_fmt_best
+
+
+if __name__ == '__main__':
+    pass
