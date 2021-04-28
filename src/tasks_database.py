@@ -225,7 +225,12 @@ class GauCalcDB(list):
                     task.status = 'P'
                     continue
 
-                last_ccdata, atoms = parse_gout(logfile)
+                try:
+                    last_ccdata, atoms = parse_gout(logfile)
+                except AttributeError:
+                    print(task.name + ': Could not parse out-file. Task failed')
+                    task.status = 'F'
+                    continue
 
                 # Update energy and geometry info if at least one SCF is done
                 if last_ccdata and hasattr(last_ccdata, 'scfenergies'):
@@ -291,6 +296,7 @@ class GauCalcDB(list):
                     else:  # 2. Simple restart
                         task.gjf.recurs_adjust(scenarios_dct['restart']['corrector'])
                         print(task.name + ': Restart')
+                        task.k_iter += 1
                         task.status = 'P'
 
     def get_stats(self, stats_file='stats.txt', verb=False):

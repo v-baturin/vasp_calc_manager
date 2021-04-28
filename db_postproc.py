@@ -66,33 +66,36 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
                     master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
                     master_dict[comp]['ccdata'].append(task.ccdata)
                     master_dict[comp]['taskname'].append(task.name)
+                    master_dict[comp]['where'].append(db_file.split('/')[-1])
                 else:
                     master_dict[comp] = {'old_ind': [int(task.name.split('_')[-1])],
                                          'energies': [task.ccdata.scfenergies[-1]],
                                          'ccdata': [task.ccdata],
-                                         'taskname': [task.name]}
-                print(task.name)
+                                         'taskname': [task.name],
+                                         'where': [db_file.split('/')[-1]]}
+                # print(task.name)
 
-        # Processing and sorting
-        for comp, val in master_dict.items():
-            new_ind = np.argsort(val['energies'])
-            lowest = new_ind[0]
-            lowest_en = val['energies'][lowest]
-            changed = (lowest != 0)
-            homo_indices = val['ccdata'][lowest].homos
-            if len(homo_indices) == 2:
-                gap = np.min([val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1],
-                              val['ccdata'][lowest].moenergies[1][homo_indices[1] + 1]]) - \
-                      np.max([val['ccdata'][lowest].moenergies[0][homo_indices[0]],
-                              val['ccdata'][lowest].moenergies[1][homo_indices[1]]])
-            else:
-                gap = val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1] - \
-                      val['ccdata'][lowest].moenergies[0][homo_indices[0]]
+    # Processing and sorting
+    for comp, val in master_dict.items():
+        print(comp, len(val['energies']))
+        new_ind = np.argsort(val['energies'])
+        lowest = new_ind[0]
+        lowest_en = val['energies'][lowest]
+        changed = (lowest != 0)
+        homo_indices = val['ccdata'][lowest].homos
+        if len(homo_indices) == 2:
+            gap = np.min([val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1],
+                          val['ccdata'][lowest].moenergies[1][homo_indices[1] + 1]]) - \
+                  np.max([val['ccdata'][lowest].moenergies[0][homo_indices[0]],
+                          val['ccdata'][lowest].moenergies[1][homo_indices[1]]])
+        else:
+            gap = val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1] - \
+                  val['ccdata'][lowest].moenergies[0][homo_indices[0]]
 
-            list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
-            val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
-            if write_xyz:
-                val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
+        list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
+        val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
+        if write_xyz:
+            val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
     # with open(res_folder + '/stats_np.txt', 'w') as stats_
