@@ -54,7 +54,10 @@
 
  {"init_gjf":   "gjf_templates/CH.gjf",
   "normal":    {"flags": "Normal termination", "tail": 1},
-  "restart":   {"corrector": {"route=": {"restart": null}}},
+  \# "restart":   {"corrector": {"route=": {"restart": null}}},
+  "restart":   {"corrector": {"route=": {"scf=": {"verytight": null,
+                                                                     "yqc": null,
+                                                                     "maxcycle":"100+50<1000"}}}},
   "errors":    {"low_phys_mem": {"flags": "could not allocate memory",
                                 "tail": 20, "msg": "Could not allocate memory",
                                 "corrector": {"command": {"mem": "4000-100>1000"}}},
