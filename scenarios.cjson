@@ -52,7 +52,7 @@
  \# {'k1':{'k2': Null, 'k3':5}}        | {'k1':{'k2': 10, '-k3': null}}       | {'k1':{'k2':10}}
  \# '-key' deletes 'key':val element of initial dictionary
 
- {"init_gjf":   "gjf_templates/CH.gjf",
+ {"init_gjf":   "gjf_templates/SiH_freqs.gjf",
   "normal":    {"flags": "Normal termination", "tail": 1},
   \# "restart":   {"corrector": {"route=": {"restart": null}}},
   "restart":   {"corrector": {"route": {"scf": {"verytight": null,
