@@ -101,9 +101,8 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
     # with open(res_folder + '/stats_np.txt', 'w') as stats_
     #     np.savetxt(res_folder + '/stats_np.txt', np.array(list_fmt_best)[:, :-1])
     if len(element_nos) == 2:
-        flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
-        list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
-        list_fmt2table(np.array(flatten_list)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
+        list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
+        list_fmt2table(np.array(list_fmt_best)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
     with open(res_folder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(res_folder + '/CH_gaps.txt', 'w') as gaps_fid:
         stats_fid.write(('%s\t' * len(element_nos)) % element_symbols + 'Etot, eV\tGap, ev\n')
         for dt in list_fmt_best:
