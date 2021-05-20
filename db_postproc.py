@@ -5,7 +5,8 @@ import numpy as np
 from tools_stability.aux_routines import list_fmt2table, table2list_fmt
 from ase.io import read, write
 from ase import Atoms
-from glob import glob
+# from glob import glob
+from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
 
 ptable = pt()
@@ -15,7 +16,7 @@ element_labels = np.array(ptable.element[:])
 def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=False, write_xyz=False):
 
     """
-    Utility analysing the folder containing database pkl files and returning
+    Utility analysing the folder containing database pkl files (recursively) and returning
     1. dictionary {(composition,): {'old_ind': [old_indices],
                                  'energies': [energies],
                                  'ccdata': [cclib_datas],
@@ -41,10 +42,11 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
 
     list_fmt_best = []
     master_dict = {}
-    db_pkl_fnames = [str(x) for x in glob(db_fold + '/*.pkl')]
+    db_pkl_fnames = [str(x) for x in Path(db_fold).rglob('*.pkl')]
     for db_file in db_pkl_fnames:
         with open(db_file, 'rb') as db_fid:
-            res_poscars = db_file.split('.')[0] + '_res_POSCARS'
+            db_fname = db_file.split('/')[-1].split('.')[0]
+            res_poscars = db_fname + '_res_POSCARS'
             database = pickle.load(db_fid)
             for task in database:
                 try:
@@ -104,7 +106,7 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
         flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
-    with open(res_folder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(res_folder + '/CH_gaps.txt', 'w') as gaps_fid:
+    with open(res_folder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(res_folder + '/all_gaps.txt', 'w') as gaps_fid:
         stats_fid.write(('%s\t' * len(element_nos)) % element_symbols + 'Etot, eV\tGap, ev\n')
         for dt in list_fmt_best:
             stats_fid.write(('%d\t'*len(element_nos) + '%.6f\t%.6f\t%s\n') % tuple(dt[0] + dt[1:]))
