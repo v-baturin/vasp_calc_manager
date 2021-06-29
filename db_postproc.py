@@ -8,12 +8,13 @@ from ase import Atoms
 # from glob import glob
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
+from genutils.abInitio_io_parse.gau_parse import get_gap
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])
 
 
-def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=False, write_xyz=False):
+def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=False, write_xyz=False, skipnangap=False):
 
     """
     Utility analysing the folder containing database pkl files (recursively) and returning
@@ -63,18 +64,22 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
                 pbc = np.ones(3, dtype=bool)
                 write(res_poscars, Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell), append=True,
                       vasp5=True)
-                if comp in master_dict:
-                    master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
-                    master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
-                    master_dict[comp]['ccdata'].append(task.ccdata)
-                    master_dict[comp]['taskname'].append(task.name)
-                    master_dict[comp]['where'].append(db_file.split('/')[-1])
-                else:
-                    master_dict[comp] = {'old_ind': [int(task.name.split('_')[-1])],
-                                         'energies': [task.ccdata.scfenergies[-1]],
-                                         'ccdata': [task.ccdata],
-                                         'taskname': [task.name],
-                                         'where': [db_file.split('/')[-1]]}
+                gap = get_gap(task.ccdata)
+                if (skipnangap or np.isfinite(gap)):
+                    if comp in master_dict:
+                        master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
+                        master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
+                        master_dict[comp]['ccdata'].append(task.ccdata)
+                        master_dict[comp]['taskname'].append(task.name)
+                        master_dict[comp]['where'].append(db_file.split('/')[-1])
+                        master_dict[comp]['gap'].append(gap)
+                    else:
+                        master_dict[comp] = {'old_ind': [int(task.name.split('_')[-1])],
+                                             'energies': [task.ccdata.scfenergies[-1]],
+                                             'ccdata': [task.ccdata],
+                                             'taskname': [task.name],
+                                             'where': [db_file.split('/')[-1]],
+                                             'gap':[gap]}
                 # print(task.name)
 
     # Processing and sorting
@@ -84,19 +89,10 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
         lowest = new_ind[0]
         lowest_en = val['energies'][lowest]
         changed = (lowest != 0)
-        homo_indices = val['ccdata'][lowest].homos
-        if len(homo_indices) == 2:
-            gap = np.min([val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1],
-                          val['ccdata'][lowest].moenergies[1][homo_indices[1] + 1]]) - \
-                  np.max([val['ccdata'][lowest].moenergies[0][homo_indices[0]],
-                          val['ccdata'][lowest].moenergies[1][homo_indices[1]]])
-        else:
-            gap = val['ccdata'][lowest].moenergies[0][homo_indices[0] + 1] - \
-                  val['ccdata'][lowest].moenergies[0][homo_indices[0]]
-
+        gap = val['gap'][lowest]
         list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
-        val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
         if write_xyz:
+            val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
             val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
