@@ -14,7 +14,7 @@ ptable = pt()
 element_labels = np.array(ptable.element[:])
 
 
-def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=False, write_xyz=False, skipnangap=False):
+def process_db_folder(db_fold, element_nos, res_folder=None, n_isoms=1, write_xyz=False, skipnangap=False, first_connected_map=None):
 
     """
     Utility analysing the folder containing database pkl files (recursively) and returning
@@ -32,6 +32,8 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
     @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
     @param element_nos: tuple with periodic numbers of elements in the desired order, e.g. (6, 1) for C H
     @param res_folder: string, a folder where all desired data will be stored
+    @param first_connected_map: BINARY SYSTEMS ONLY! (SiH, PdBi etc.)  2d array of numbers of lowest fully-connected
+                                 isomers
     @return: :rtype: (dict, list)
     """
 
@@ -84,16 +86,24 @@ def process_db_folder(db_fold, element_nos, res_folder=None, write_all_isoms=Fal
 
     # Processing and sorting
     for comp, val in master_dict.items():
+        if first_connected_map is not None:
+            lowest_connected = int(first_connected_map[comp])
+        else:
+            lowest_connected = 0
         print(comp, len(val['energies']))
         new_ind = np.argsort(val['energies'])
-        lowest = new_ind[0]
-        lowest_en = val['energies'][lowest]
-        changed = (lowest != 0)
-        gap = val['gap'][lowest]
+        n_lowest_inds = new_ind[np.arange(lowest_connected, min(lowest_connected + n_isoms, len(new_ind)))]
+        assert len(n_lowest_inds) > 0, "Invalid first_connected_map"
+        lowest_en = val['energies'][n_lowest_inds[0]]
+        changed = (n_lowest_inds[0] != 0)
+        gap = val['gap'][n_lowest_inds[0]]
         list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
         if write_xyz:
-            val['ccdata'][lowest].metadata['comments'] = 'E_tot = {:6.5f}'.format(lowest_en)
-            val['ccdata'][lowest].writexyz(res_folder + '/' + val['taskname'][lowest] + '.xyz')
+            for i, lowest_k in enumerate(n_lowest_inds):
+                val['ccdata'][lowest_k].metadata['comments'] = ['dE = {:6.5f}'.format(val['energies'][lowest_k] -
+                                                                                      val['energies'][n_lowest_inds[0]])]
+                val['ccdata'][lowest_k].writexyz(res_folder + '/' + val['taskname'][lowest_k] + '_g' +
+                                                 str(i + lowest_connected) + '.xyz')
 
     # list_fmt_data = np.array(list_fmt_data)
     # with open(res_folder + '/stats_np.txt', 'w') as stats_
