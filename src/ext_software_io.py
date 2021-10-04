@@ -8,17 +8,21 @@ from cclib.io import ccread
 from .common_tools import recursive_map_to_keys, recursively_map_to_vals, try_numerize_string
 
 
-def read_poscars(poscars_fname):
+def read_geoms(init_geom_fname):
     """
     Reads POSCARS multiple images file into a list of Atoms objects
-    @param poscars_fname: POSCARS filename
+    @param init_geom_fname: POSCARS filename
     @return: list of Atoms objects
     """
     poscars_list = list()
-    with open(poscars_fname) as f:
+    if ('poscar' in init_geom_fname.casefold()) or ('vasp' in init_geom_fname.casefold()):
+        format='vasp'
+    elif 'xyz' in init_geom_fname.casefold():
+        format='xyz'
+    with open(init_geom_fname) as f:
         while True:
             try:
-                poscars_list.append(ase_read(f, format='vasp'))
+                poscars_list.append(ase_read(f, format=format))
             except IndexError:
                 break
     return poscars_list

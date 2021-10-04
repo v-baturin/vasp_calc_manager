@@ -14,7 +14,7 @@ sys.stdout = open('log', 'a')
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
 ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder', default='RECALC')
-ap.add_argument("-p", "--poscars_file", required=False, help="POSCARS-file", default='POSCARS')
+ap.add_argument("-g", "--geoms_file", required=False, help="POSCARS-file or xyz-batch", default='POSCARS')
 ap.add_argument("-d", "--database_file", required=False, help='DB file', default='database.pkl')
 ap.add_argument("-m", "--maxcalcs", required=False, help='Maximum parallel calcs', default='1')
 ap.add_argument("-o", "--outfile_pattern", required=False, help='Output file pattern', default='log')
@@ -45,7 +45,7 @@ if os.path.isfile(db_file):
         database = pickle.load(db_fid)
 else:
     database = GauCalcDB(machines_json=machines_dct,
-                         **{k: input_kwargs[k] for k in ('scenarios', 'poscars_file', 'recalc_folder', 'maxiter',
+                         **{k: input_kwargs[k] for k in ('scenarios', 'geoms_file', 'recalc_folder', 'maxiter',
                                                          'machine', 'outfile_pattern', 'min_mult')})
 
 

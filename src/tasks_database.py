@@ -5,7 +5,7 @@ import glob
 from datetime import datetime
 from os.path import isfile
 from pathlib import Path
-from .ext_software_io import read_poscars, parse_gout, dict2gauformat
+from .ext_software_io import read_geoms, parse_gout, dict2gauformat
 from .gjf import Gjf
 from .common_tools import add_index, sh_execute, checkflag, cjson_load, mk_new_dir
 
@@ -103,7 +103,7 @@ class GauTask:
 
 class GauCalcDB(list):
 
-    def __init__(self, scenarios='scenarios.cjson', poscars_file=None, recalc_folder=None, maxiter=5,
+    def __init__(self, scenarios='scenarios.cjson', geoms_file=None, recalc_folder=None, maxiter=5,
                  machine='local', machines_json='machines.json', outfile_pattern='log', inpattern='*.gjf', min_mult=False):
 
         list.__init__(self)
@@ -117,17 +117,17 @@ class GauCalcDB(list):
         mach_dcts = cjson_load(machines_json)
         machine_dict = mach_dcts[machine]
 
-        if poscars_file and isfile(poscars_file):
+        if geoms_file and isfile(geoms_file):
 
-            poscars_list = read_poscars(poscars_file)
+            geoms_list = read_geoms(geoms_file)
 
-            for poscar in poscars_list:
+            for geom in geoms_list:
                 # Creating task entry
-                formula = poscar.get_chemical_formula()
-                init_gjf['molstruct'] = poscar
+                formula = geom.get_chemical_formula()
+                init_gjf['molstruct'] = geom
                 if min_mult:
                     init_gjf['charge_mult'] = init_gjf['charge_mult'].split()[0] +\
-                                              ' ' + str(sum(poscar.get_atomic_numbers()) % 2 + 1)
+                                              ' ' + str(sum(geom.get_atomic_numbers()) % 2 + 1)
                 curr_dest_folder = mk_new_dir(recalc_folder + '/' + formula + '/' + formula, zerobased=True)
                 curr_label = curr_dest_folder.split('/')[-1]
                 task = GauTask(gjf=init_gjf, folder=curr_dest_folder, name=curr_label, jobfile='jobfile.sh',
@@ -172,7 +172,7 @@ class GauCalcDB(list):
             if n_logs == 0:
                 raise Exception('Destination folder has no Gaussian calculations with in- and out-files of provided format!')
         else:
-            raise Exception('Error: destination_folder and (poscars_file or outfile_pattern) must be provided! ')
+            raise Exception('Error: destination_folder and (geoms_file or outfile_pattern) must be provided! ')
 
     def __str__(self):
         return '<GauCalcDB: ' + str(len(self)) + ' GauTask objects in ' + self.master_folder + '>'
@@ -352,8 +352,8 @@ class GauCalcDB(list):
 #     # jobtemplate = '../testfolder/job_arkuda.sh'
 #     template = '../testfolder/job_oleg.sh'
 #     dest_fold = '../DESTINATION'
-#     poscars_file = '../testfolder/POSCARS'
-#     database = GauCalcDB(scenarios='../scenarios.cjson', poscars_file=poscars_file, recalc_folder=dest_fold,
+#     geoms_file = '../testfolder/POSCARS'
+#     database = GauCalcDB(scenarios='../scenarios.cjson', geoms_file=geoms_file, recalc_folder=dest_fold,
 #                          machines_json='../machines.cjson', machine='rurik')
 #     # database.submitjobs()
 #     database.get_stats(verb=True)
