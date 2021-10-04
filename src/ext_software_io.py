@@ -5,7 +5,7 @@ from copy import deepcopy
 from ase import Atoms
 from ase.io import read as ase_read
 from cclib.io import ccread
-from common_tools import recursive_map_to_keys, recursively_map_to_vals, try_numerize_string
+from .common_tools import recursive_map_to_keys, recursively_map_to_vals, try_numerize_string
 
 
 def read_geoms(init_geom_fname):
