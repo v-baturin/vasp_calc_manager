@@ -14,6 +14,7 @@ def read_geoms(init_geom_fname):
     @param init_geom_fname: POSCARS filename
     @return: list of Atoms objects
     """
+    geoms_list = list()
     if ('poscar' in init_geom_fname.casefold()) or ('vasp' in init_geom_fname.casefold()):
         geoms_list = list()
         with open(init_geom_fname) as f:
