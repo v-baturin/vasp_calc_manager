@@ -5,7 +5,7 @@ from copy import deepcopy
 from ase import Atoms
 from ase.io import read as ase_read
 from cclib.io import ccread
-from .common_tools import recursive_map_to_keys, recursively_map_to_vals, try_numerize_string
+from common_tools import recursive_map_to_keys, recursively_map_to_vals, try_numerize_string
 
 
 def read_geoms(init_geom_fname):
@@ -14,18 +14,17 @@ def read_geoms(init_geom_fname):
     @param init_geom_fname: POSCARS filename
     @return: list of Atoms objects
     """
-    poscars_list = list()
     if ('poscar' in init_geom_fname.casefold()) or ('vasp' in init_geom_fname.casefold()):
-        format='vasp'
+        geoms_list = list()
+        with open(init_geom_fname) as f:
+            while True:
+                try:
+                    geoms_list.append(ase_read(f, format='vasp'))
+                except IndexError:
+                    break
     elif 'xyz' in init_geom_fname.casefold():
-        format='xyz'
-    with open(init_geom_fname) as f:
-        while True:
-            try:
-                poscars_list.append(ase_read(f, format=format))
-            except IndexError:
-                break
-    return poscars_list
+        geoms_list = ase_read(init_geom_fname, index=':', format='xyz')
+    return geoms_list
 
 
 def gauformat2dict(string: str, gau_route=False, case_sensitive=False):
@@ -217,38 +216,43 @@ def parse_gout(logfile):
 #     return [j.strip() for j in option_opts]
 
 if __name__ == '__main__':
-    upper = lambda x: x.casefold()
-    testdct = {'Mem': 10, 'HaHa': {'Lalal': 'AAA', 'uUuU': 777}}
-    resdct = recursive_map_to_keys(upper, testdct)
-    print(resdct)
+    # upper = lambda x: x.casefold()
+    # testdct = {'Mem': 10, 'HaHa': {'Lalal': 'AAA', 'uUuU': 777}}
+    # resdct = recursive_map_to_keys(upper, testdct)
+    # print(resdct)
+    #
+    #
+    # def try_numerize_string(string):
+    #     if not isinstance(string, str):
+    #         return string
+    #     else:
+    #         string = string.strip()
+    #     if re.match('-?[0-9]+$', string):
+    #         return int(string)
+    #     else:
+    #         try:
+    #             return float(string)
+    #         except:
+    #             return string
+    #
+    #
+    # testdct2 = {'a': 'Hello', 'b': '150.00', 'c': 10, 'd': '10', 'e': '1e5'}
+    # resdct = recursively_map_to_vals(try_numerize_string, testdct2)
+    # print(resdct)
+    #
+    # g_in_fname = '/home/vsbat/SYNC/1_TALKS/20200604_Sk_lab_TALK/TXM-CAT_CHCl3_Step1.gjf'
+    # with open(g_in_fname) as f:
+    #     ats = gaussian_in_2_Atoms(f)
+    # xyz_at = xyz_2atoms(g_in_fname)
+    #
+    # bad_g_out = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/log737771.8835'
+    # # output_g = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/log737771.7237'
+    # ccdata = ccread(bad_g_out)
 
+    test_geoms_fname = '/home/vsbat/mnt/arkuda_VBATURIN/PROJECT_SiH/cut_relax_uspex/Si18H22_from24_cut/all.xyz'
+    gms = read_geoms(test_geoms_fname)
+    print('!')
 
-    def try_numerize_string(string):
-        if not isinstance(string, str):
-            return string
-        else:
-            string = string.strip()
-        if re.match('-?[0-9]+$', string):
-            return int(string)
-        else:
-            try:
-                return float(string)
-            except:
-                return string
-
-
-    testdct2 = {'a': 'Hello', 'b': '150.00', 'c': 10, 'd': '10', 'e': '1e5'}
-    resdct = recursively_map_to_vals(try_numerize_string, testdct2)
-    print(resdct)
-
-    g_in_fname = '/home/vsbat/SYNC/1_TALKS/20200604_Sk_lab_TALK/TXM-CAT_CHCl3_Step1.gjf'
-    with open(g_in_fname) as f:
-        ats = gaussian_in_2_Atoms(f)
-    xyz_at = xyz_2atoms(g_in_fname)
-
-    bad_g_out = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/log737771.8835'
-    # output_g = '/home/vsbat/SYNC/00_Current_PyWork/refine_with_gaussian/testfolder/log737771.7237'
-    ccdata = ccread(bad_g_out)
 
 
     pass
