@@ -13,8 +13,12 @@ from genutils.abInitio_io_parse.gau_parse import get_gap
 ptable = pt()
 element_labels = np.array(ptable.element[:])
 
+def process_db_folder(db_fold, *args, **kwargs):
+    db_pkl_fnames = [str(x) for x in Path(db_fold).rglob('*.pkl')]
+    return process_db_files(db_pkl_fnames, *args, **kwargs)
 
-def process_db_folder(db_fold, element_nos, res_folder=None, n_isoms=1, write_xyz=False, skipnangap=False, first_connected_map=None):
+
+def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, write_xyz=False, skipnangap=False, first_connected_map=None):
 
     """
     Utility analysing the folder containing database pkl files (recursively) and returning
@@ -37,6 +41,9 @@ def process_db_folder(db_fold, element_nos, res_folder=None, n_isoms=1, write_xy
     @return: :rtype: (dict, list)
     """
 
+    if isinstance(db_pkl_fnames, str):
+        db_pkl_fnames = [db_pkl_fnames]
+
     element_symbols = tuple(element_labels[i] for i in element_nos)
     if res_folder is None:
         res_folder = '.'
@@ -45,7 +52,6 @@ def process_db_folder(db_fold, element_nos, res_folder=None, n_isoms=1, write_xy
 
     list_fmt_best = []
     master_dict = {}
-    db_pkl_fnames = [str(x) for x in Path(db_fold).rglob('*.pkl')]
     for db_file in db_pkl_fnames:
         with open(db_file, 'rb') as db_fid:
             db_fname = db_file.split('/')[-1].split('.')[0]
