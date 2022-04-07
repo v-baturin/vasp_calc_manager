@@ -216,6 +216,8 @@ class Gjf(dict):
                 for key, val in self['command'].items():
                     if key == 'mem':
                         fid.write('%' + key + '=%sMB\n' % val)
+                    elif val is None:
+                        fid.write('%' + key + '\n')
                     else:
                         fid.write('%' + key + '=%s\n' % val)
 
