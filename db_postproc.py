@@ -14,6 +14,12 @@ ptable = pt()
 element_labels = np.array(ptable.element[:])
 
 def process_db_folder(db_fold, *args, **kwargs):
+    """
+    @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
+    @param args: arguments to be passed to process_db_files
+    @param kwargs: keyword arguments to be passed to process_db_files
+    @return:
+    """
     db_pkl_fnames = [str(x) for x in Path(db_fold).rglob('*.pkl')]
     return process_db_files(db_pkl_fnames, *args, **kwargs)
 
@@ -33,7 +39,7 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
     Example for C6H12, which has lowest structure different from the one obtained from :
     [[6, 1], -2255.445, 3.5, True]
 
-    @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
+    @param db_pkl_fnames: list of paths to GauCalcDB's, or one path as a string
     @param element_nos: tuple with periodic numbers of elements in the desired order, e.g. (6, 1) for C H
     @param res_folder: string, a folder where all desired data will be stored
     @param first_connected_map: BINARY SYSTEMS ONLY! (SiH, PdBi etc.)  2d array of numbers of lowest fully-connected

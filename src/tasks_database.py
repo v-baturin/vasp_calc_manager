@@ -3,7 +3,7 @@ import pickle
 import os
 import glob
 from datetime import datetime
-from os.path import isfile
+from os.path import isfile, join
 from pathlib import Path
 from .ext_software_io import read_geoms, parse_gout, dict2gauformat
 from .gjf import Gjf
@@ -301,6 +301,8 @@ class GauCalcDB(list):
 
     def get_stats(self, stats_file='stats.txt', verb=False):
 
+
+        stats_file = join(self.master_folder, stats_file)
         stats = {'P': 0, 'R': 0, 'D': 0, 'F': 0, 'L':0}  # Pending, Running, Done, Failed, Loaded
         fullstory = []
 
@@ -332,6 +334,8 @@ class GauCalcDB(list):
         return stats
 
     def dump(self, filename_pkl='database.pkl', filename_en='energies.txt'):
+        filename_en = join(self.master_folder, filename_en)
+        filename_pkl = join(self.master_folder, filename_pkl)
         with open(filename_en, 'w') as en_fid:
             en_fid.write('\n' + '*' * 10 + ' {:%Y-%m-%d %H:%M} '.format(datetime.now()) + '*' * 10 + '\n')
             en_fid.write('SCF energies in eV:\n')
