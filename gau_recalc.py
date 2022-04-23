@@ -24,8 +24,12 @@ ap.add_argument("--scenarios", required=False, help='Scenarios cjson file', defa
 ap.add_argument("--min_mult", required=False, help='Use minimal multiplicity', action='store_true')
 input_kwargs = vars(ap.parse_args())
 
+
+log_path = os.path.join(input_kwargs['recalc_folder'], 'log')
+os.makedirs(input_kwargs['recalc_folder'], exist_ok=True)
+sys.stdout = open(log_path, 'a')
+
 machines_dct = cjson_load(input_kwargs['machines'])
-sys.stdout = open(os.path.join(input_kwargs['recalc_folder'], 'log'), 'a')
 # Trying to automatically determine the supercomputer if not set
 if not input_kwargs['machine']:
     hostname = socket.gethostname()
