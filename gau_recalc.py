@@ -53,7 +53,8 @@ else:
                                                          'machine', 'outfile_pattern', 'min_mult')})
 
 
-while not os.path.isfile('DONE') and not os.path.isfile('STOP'):
+while not os.path.isfile(os.path.join(input_kwargs['recalc_folder'], 'DONE')) and \
+        not os.path.isfile(os.path.join(input_kwargs['recalc_folder'], 'STOP')):
     database.update(scenarios=input_kwargs['scenarios'])
     print('*' * 10 + '{:%Y-%m-%d %H:%M}'.format(datetime.now()) + '*' * 10 + '\n')
     database.submit_jobs(n_par_calcs=int(input_kwargs['maxcalcs']))

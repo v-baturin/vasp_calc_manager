@@ -324,10 +324,10 @@ class GauCalcDB(list):
             if stats['F'] > 0:
                 print('We\'ve done all we could with this input\n')
                 print('To recover {} failed tasks, try to restart with altered scenarios'.format(stats['F']))
-                sh_execute('touch STOP')
+                sh_execute('touch ' + self.master_folder + '/STOP')
             else:
                 print('Congratulations! All done!')
-                sh_execute('touch DONE')
+                sh_execute('touch ' + self.master_folder + '/DONE')
 
         print("Pending: {}, Running: {}, Done: {}, Failed: {}, Loaded: {}".format(
             stats['P'], stats['R'], stats['D'], stats['F'], stats['L']))
