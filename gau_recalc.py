@@ -9,7 +9,6 @@ import time
 from src.common_tools import cjson_load
 from src.tasks_database import GauCalcDB
 
-sys.stdout = open('log', 'a')
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
@@ -26,7 +25,7 @@ ap.add_argument("--min_mult", required=False, help='Use minimal multiplicity', a
 input_kwargs = vars(ap.parse_args())
 
 machines_dct = cjson_load(input_kwargs['machines'])
-
+sys.stdout = open(os.path.join(input_kwargs['recalc_folder'], 'log'), 'a')
 # Trying to automatically determine the supercomputer if not set
 if not input_kwargs['machine']:
     hostname = socket.gethostname()
@@ -43,6 +42,7 @@ db_file = input_kwargs['database_file']
 if os.path.isfile(db_file):
     with open(db_file, 'rb') as db_fid:
         database = pickle.load(db_fid)
+    db_file = db_file.split('/')[-1]
 else:
     database = GauCalcDB(machines_json=machines_dct,
                          **{k: input_kwargs[k] for k in ('scenarios', 'geoms_file', 'recalc_folder', 'maxiter',
