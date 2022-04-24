@@ -15,7 +15,6 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
 ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder')
 ap.add_argument("-g", "--geoms_file", required=False, help="POSCARS-file or xyz-batch", default='POSCARS')
-ap.add_argument("-d", "--database_file", required=False, help='DB file', default='database.pkl')
 ap.add_argument("-m", "--maxcalcs", required=False, help='Maximum parallel calcs', default='1')
 ap.add_argument("-o", "--outfile_pattern", required=False, help='Output file pattern', default='log')
 ap.add_argument("-s", "--sleep", required=False, help='Sleep time, in minutes', default='5')
@@ -44,7 +43,7 @@ if not input_kwargs['machine']:
     print('In case of error, specify the machine explicitly using -c key and edit the machines.cjson accordingly')
 
 # Assigning input arguments to variables, minding the defaults 
-db_file = input_kwargs['database_file']
+db_file = os.path.join(input_kwargs['recalc_folder'], 'database.pkl')
 
 if os.path.isfile(db_file):
     with open(db_file, 'rb') as db_fid:
