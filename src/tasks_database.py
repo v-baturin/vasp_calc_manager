@@ -335,7 +335,6 @@ class GauCalcDB(list):
 
     def dump(self, filename_pkl='database.pkl', filename_en='energies.txt'):
         filename_en = join(self.master_folder, filename_en)
-        filename_pkl = join(self.master_folder, filename_pkl)
         with open(filename_en, 'w') as en_fid:
             en_fid.write('\n' + '*' * 10 + ' {:%Y-%m-%d %H:%M} '.format(datetime.now()) + '*' * 10 + '\n')
             en_fid.write('SCF energies in eV:\n')
