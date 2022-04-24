@@ -46,7 +46,7 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
                                  isomers
     @return: :rtype: (dict, list)
     """
-
+    VACUUM_SIZE = 15
     if isinstance(db_pkl_fnames, str):
         db_pkl_fnames = [db_pkl_fnames]
 
@@ -72,9 +72,7 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
                 coords = task.ccdata.atomcoords[-1]
                 coords -= np.sum(coords, axis=0)
                 numbers = task.ccdata.atomnos
-                cell = np.diag([np.max(coords[:, 0]) - np.max(coords[:, 0]) + 15,
-                                np.max(coords[:, 1]) - np.max(coords[:, 1]) + 15,
-                                np.max(coords[:, 2]) - np.max(coords[:, 2]) + 15])
+                cell = np.diag(np.max(coords, axis=1) - np.min(coords, axis=1) + VACUUM_SIZE)
                 pbc = np.ones(3, dtype=bool)
                 write(res_poscars, Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell), append=True,
                       vasp5=True)

@@ -6,13 +6,14 @@ import os
 from datetime import datetime
 import pickle
 import time
-from src.common_tools import cjson_load
+from src.common_tools import cjson_load, add_index
 from src.tasks_database import GauCalcDB
 
+DEFAULT_RES_FOLDER = 'results'
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
-ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder', default='RECALC')
+ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder')
 ap.add_argument("-g", "--geoms_file", required=False, help="POSCARS-file or xyz-batch", default='POSCARS')
 ap.add_argument("-d", "--database_file", required=False, help='DB file', default='database.pkl')
 ap.add_argument("-m", "--maxcalcs", required=False, help='Maximum parallel calcs', default='1')
@@ -24,6 +25,8 @@ ap.add_argument("--scenarios", required=False, help='Scenarios cjson file', defa
 ap.add_argument("--min_mult", required=False, help='Use minimal multiplicity', action='store_true')
 input_kwargs = vars(ap.parse_args())
 
+if input_kwargs['recalc_folder'] is None:
+    input_kwargs['recalc_folder'] = add_index(DEFAULT_RES_FOLDER)
 
 log_path = os.path.join(input_kwargs['recalc_folder'], 'log')
 os.makedirs(input_kwargs['recalc_folder'], exist_ok=True)
