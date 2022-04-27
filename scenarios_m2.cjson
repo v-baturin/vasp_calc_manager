@@ -1,0 +1,123 @@
+ \# ==== File format: ====
+ \# This file is a COMMENTED JSON, different from a standard json file by the comments syntax added:
+ \# A comment is written using ' \# ' sequence (backslash + hash)
+ \# The file is parsed by src/common_tools/cjson_load function
+ \# ==== Syntax ====
+ \# Apart from comments this is a regular json-file encoding a dictionary structure.
+ \# 
+ \#  == The first key, "init_gjf" ==
+ \# describes the way to initialize the calculation procedure
+ \# The corresponding value can be
+ \# either a name of gjf-file, whose structure (except from geometry) will be used as a template for recalculation
+ \# or an explicit tree-like dictionary whose terminal values can be either numericals or null (with the only exception
+ \# of "approach_basis" keyword.
+ \# example:
+ \# {"init_gjf": {"command": {"nprocshared": 5, "mem": 1000},
+ \#               "route": {"approach_basis": "PBE1PBE/Def2SVPP", "opt":{"yqc": null, "MaxCycle": 100}},
+ \#               "charge_mult": "1 1",
+ \#               "last_section": "Mo O 0 \nLANL2DZ    \n**** \n \nMo O 0 "}}
+ \# MIND THAT MEMORY IS A NUMERICAL IN MEGABYTES "mem": 1000 means 1GB
+ \#  == "normal" key ==
+ \# Value of "flags" subkey, if present in output file, signals the normal (successful) termination
+ \# Note on "flags":
+ \# flags can be single str or list of str.
+ \# special syntax for flags:
+ \# 1. flag starts with minus sign "-hello"
+ \#    This means that the file will be checked for the ABSENCE of "hello" word
+ \# 2. Backslashes must be escaped: \\ instead of \
+ \# 2. flag starts with double backslash "\\-literalminus":
+ \#    Check file for "-literalminus" entry. So, THE FIRST BACKSLASH IS ALWAYS FOR ESCAPING.
+ \#    To search for literal starting backslash use double backslash: "\\\\string"
+ \# "tail" (optional) tells how many last lines are searched
+ \#  == "restart" == 
+ \# contains "corrector" which shows how to CORRECT the current "route" section of
+ \# gjf-file if a simple restart is needed
+ \# The syntax of "corrector"s' values is similar to the one of "init_gjf" with the extension that values can also
+ \# be strings of special formats: 'init+inc<max' or 'init-dec>min', where init, inc, dec, max and min are numericals.
+ \# Corrector is recursively applied to the current gjf according to the following rules:
+ \#               ORIGINAL             |          CORRECTOR                   |                RESULT
+ \#---------------------------------------------------------------------------------------------------------------------
+ \# {'k1':{'k2':null}}                 | {'k1':{'k3':5}}                      | {'k1':{'k2':null, 'k3': 5}}
+ \# {'k1':{'k2': 5}}                   | {'k1':{'k2':null}}                   | {'k1':{'k2':5}}
+ \# on same keys, values are recursively merged
+ \#---------------------------------------------------------------------------------------------------------------------
+ \# {'k1':None, 'k2':1, 'k3':10}       | {'k1':'7+3<25','k2': '3+2<15',       | {'k1':7, 'k2':3, 'k3':8}
+ \#                                    |  'k3':'15-2>5'}                      |
+ \# '7+3<25' means: if original value None or non-numerical or nonexistent, set 7, if numerical value x, set x+3,
+ \# if result is over 25, raise error. Similarly for '15-2>5'
+ \#---------------------------------------------------------------------------------------------------------------------
+ \# {'k1':{'k2':null}}                 | {'k1=':{'k3':5}}                     | {'k1':{'k3':5}}
+ \# 'key=' in corrector forces to override and replace the existing value of 'key'
+ \# --------------------------------------------------------------------------------------------------------------------
+ \# {'k1':{'k2': Null, 'k3':5}}        | {'k1':{'k2': 10, '-k3': null}}       | {'k1':{'k2':10}}
+ \# '-key' deletes 'key':val element of initial dictionary
+
+ {"init_gjf":   "gjf_templates/relax_P3_CC_m2.gjf",
+  "normal":    {"flags": "Normal termination", "tail": 1},
+  \# "restart":   {"corrector": {"route=": {"restart": null}}},
+  "restart":   {"corrector": {"route": {"scf": {"verytight": null,
+                                                                     "yqc": null,
+                                                                     "maxcycle":"100+50<1000"}}}},
+  "errors":    {"low_phys_mem": {"flags": "could not allocate memory",
+                                "tail": 20, "msg": "Could not allocate memory",
+                                "corrector": {"command": {"mem": "4000-100>1000"}}},
+               "low_alloc_mem": {"flags": "Out-of-memory error", "tail": false,
+                                 "msg": "Insufficient memory allocated",
+                                 "corrector": {"command": {"mem": "1000+1000<10000"}}},
+               "scf_conv_failure": {"flags": "Convergence failure -- run terminated.", "tail": false,
+                                    "msg": "SCF convergence failed",
+                                    "corrector": {"route": {"scf": {"yqc": null,
+                                                                    "maxcycle":"100+50<1000"}
+                                                           }
+                                                 }
+                                   },
+               "geom_insuff_steps": {"flags": " Number of steps exceeded,  NStep=", "tail": false,
+                                    "msg": "Geom opt failed",
+                                    "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}
+                                                           }
+                                                 }
+                                   },
+               "geometry_error": {"flags": ["Error termination", "l103.exe"], "tail": 10,
+                                    "msg": "Geometry error",
+                                    "corrector": {"route": {"opt": {"Cart": null}
+                                                           }
+                                                 }
+                                   },
+               "syntax_err1": {"flags": "scf=(verytight,maxcycle,yqc)", "tail": false,
+                                    "msg": "SyntaxErr1",
+                                    "corrector": {"route": {"scf=": {"verytight": null,
+                                                                     "yqc": null,
+                                                                     "maxcycle":"100+50<1000"}
+                                                           }
+                                                 }
+                                   },
+               "symm_failure": {"flags": "Symmetry consistency failure.", "tail": false,
+                                 "msg": "Symmetry consistency failure.",
+                                 "corrector": {"route": {"nosymm": null}}},
+               "few_opt_Nstep": {"flags": "Number of steps exceeded,  NStep=", "tail": false,
+                                 "msg": "Insufficient geometry opt steps",
+                                 "corrector": {"route": {"opt": {"maxcycle":"100+50<1000"}}}},
+               "bad_basis": {"flags": "Atomic number out of range", "tail": 50,
+                             "msg"  : "Insufficient basis",
+                             "corrector" : {}},
+               "bad_input": {"flags": "Error termination via.*l101", "tail": 50,
+                             "msg": "Bad input file",
+                             "corrector": {"route": {"scf": {"yqc": null}}}},
+               "El conv failed 508": {"flags": ["Error termination", "Convergence failure", "l508.exe"], "tail": 10,
+                                      "msg": "Geometry error",
+                                      "corrector": {"command": {"mem": "1000+1000<10000"},
+                                                     "route": {"scf": {"yqc": null,
+                                                                       "maxcycle":"100+50<1000"
+                                                                       }
+                                                              }
+                                                    }
+                                      },
+               "No connectivity info": {"flags": "connectivity", "tail": 50,
+                             "msg": "No connectivity info",
+                             "corrector": {"route": {"geom": {"-connectivity": null}}}}
+               },
+  "fails":     {"bad_basis": {"flags": "Atomic number out of range", "tail": 50,
+                             "msg"  : "Insufficient basis",
+                             "corrector" : {}}
+               }
+}

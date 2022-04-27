@@ -1,0 +1,16 @@
+%mem=6000MB
+%nprocshared=10
+%rwf=tmp.rwf
+%nosave=None
+%chk=angle_scan.chk
+# uccsd/lanl2dz opt(verytight, modredundant) nosymm scf=(verytight, yqc, maxcycle=1000)
+
+Title Card Required
+
+0 2
+ P                  0.00000000    0.00000000   -0.00003200
+ P                  0.00000000    0.00000000   -2.08028100
+ P                  0.00000000    0.00000000    2.08031300
+
+A 3 1 2 F
+
