@@ -161,8 +161,11 @@ class GauCalcDB(list):
 
                 chksearch = glob.glob(curr_folder_full + '/*.chk')
                 chk_fname = chksearch[0].split('/')[-1] if chksearch else None
-
-                gjf = Gjf(work_gjf_name)
+                try:
+                    gjf = Gjf(work_gjf_name)
+                except AttributeError:
+                    print(work_gjf_name, ': Wrong format')
+                    continue
                 name = work_gjf_name.split('/')[-1].split('.')[0]
                 task = GauTask(gjf=gjf, folder=curr_folder_full, name=name, jobfile=jobfname,
                                machine=machine, machine_dict=machine_dict, out_fname=out_fname, chk_file=chk_fname,
