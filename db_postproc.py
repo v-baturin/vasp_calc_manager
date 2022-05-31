@@ -5,10 +5,12 @@ import numpy as np
 from tools_stability.aux_routines import list_fmt2table, table2list_fmt
 from ase.io import read, write
 from ase import Atoms
-# from glob import glob
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
-from genutils.abInitio_io_parse.gau_parse import get_gap
+from genutils.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
+from matplotlib import pyplot as plt
+from graph_utils.my_graphs import draw_spectrum
+from graph_utils.formatting import cm2inch
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])
@@ -24,7 +26,13 @@ def process_db_folder(db_fold, *args, **kwargs):
     return process_db_files(db_pkl_fnames, *args, **kwargs)
 
 
-def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, write_xyz=False, skipnangap=False, first_connected_map=None):
+def process_db_files(db_pkl_fnames,
+                     element_nos=None, element_symbols=None,
+                     res_folder=None,
+                     n_isoms=1,
+                     write_xyz=False,
+                     skipnangap=False,
+                     first_connected_map=None):
 
     """
     Utility analysing the folder containing database pkl files (recursively) and returning
@@ -50,7 +58,10 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
     if isinstance(db_pkl_fnames, str):
         db_pkl_fnames = [db_pkl_fnames]
 
-    element_symbols = tuple(element_labels[i] for i in element_nos)
+    if element_nos and not element_symbols:
+        element_symbols = tuple(element_labels[i] for i in element_nos)
+    elif element_symbols and not element_nos:
+        element_nos = tuple(ptable.number[sym] for sym in element_symbols)
     if res_folder is None:
         res_folder = '.'
     if not os.path.exists(res_folder):
@@ -70,9 +81,9 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
                     print(task.name + ' in ' + db_file + ' : job failed')
                     continue
                 coords = task.ccdata.atomcoords[-1]
-                coords -= np.sum(coords, axis=0)
+                coords -= (np.sum(coords, axis=0))/len(coords)
                 numbers = task.ccdata.atomnos
-                cell = np.diag(np.max(coords, axis=1) - np.min(coords, axis=1) + VACUUM_SIZE)
+                cell = np.diag(np.max(coords, axis=0) - np.min(coords, axis=0) + VACUUM_SIZE)
                 pbc = np.ones(3, dtype=bool)
                 write(res_poscars, Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell), append=True,
                       vasp5=True)
@@ -107,7 +118,7 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
         lowest_en = val['energies'][n_lowest_inds[0]]
         changed = (n_lowest_inds[0] != 0)
         gap = val['gap'][n_lowest_inds[0]]
-        list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed])
+        list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed] + [n_lowest_inds[0]])
         if write_xyz:
             for i, lowest_k in enumerate(n_lowest_inds):
                 val['ccdata'][lowest_k].metadata['comments'] = ['dE = {:6.5f}'.format(val['energies'][lowest_k] -
@@ -123,12 +134,47 @@ def process_db_files(db_pkl_fnames, element_nos, res_folder=None, n_isoms=1, wri
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
     with open(res_folder + '/n_m_Enm_gap.txt', 'w') as stats_fid, open(res_folder + '/all_gaps.txt', 'w') as gaps_fid:
-        stats_fid.write(('%s\t' * len(element_nos)) % element_symbols + 'Etot, eV\tGap, ev\n')
+        stats_fid.write(('%s\t' * len(element_nos)) % element_symbols + 'Etot, eV\tGap, ev\tinitial ind\n')
         for dt in list_fmt_best:
-            stats_fid.write(('%d\t'*len(element_nos) + '%.6f\t%.6f\t%s\n') % tuple(dt[0] + dt[1:]))
+            stats_fid.write(('%d\t'*len(element_nos) + '%.6f\t%.6f\t%s\t%d\n') % tuple(dt[0] + dt[1:]))
             gaps_fid.write(('%d\t'*len(element_nos) + '%.6f\n') % (tuple(dt[0]) + (dt[2],)))
 
     return master_dict, list_fmt_best
+
+def plot_el_spectra_binary(db_pkl_fnames, element_symbols, savefiles=True, save_folder='spectra_graphs'):
+    master_dict, bests = process_db_files(db_pkl_fnames, element_symbols=element_symbols)
+    composition_array = np.array([list(key) for key in master_dict.keys()])
+    composition_array = composition_array[composition_array[:,-1].argsort()]
+    for ind in range(-2, -composition_array.shape[1]-1,-1):
+        composition_array = composition_array[composition_array[:, ind].argsort(kind='mergesort')]
+
+    figno = 0
+    for first_el, cnt in np.column_stack(np.unique(composition_array[:, 0], return_counts=True)):
+        curr_ax_no = 0
+        figno += 1
+        plt.figure()
+        fig, axs = plt.subplots(cnt, 1, sharex=True)
+        plt.setp(axs, yticks=np.array([-0.5, 0, 0.5]))
+        fig.subplots_adjust(hspace=0)
+        fig.set_size_inches(cm2inch(8, 1.5*cnt))
+        for i, composition in enumerate(composition_array[composition_array[:,0] == first_el]):
+            db_key = tuple(composition)
+            db_val = master_dict[db_key]
+            lowest_isom_idx = np.argsort(db_val['energies'])[0]
+            cc_data = db_val['ccdata'][lowest_isom_idx]
+            up_dos, dn_dos, fermi = get_kohn_sham(cc_data)
+            draw_spectrum(span=(-10,10), specup=up_dos - fermi, e_fermi=0, shareax=axs[i], label=get_formula(cc_data),
+                          sigma=0.1)
+        plt.savefig(element_symbols[0] + str(first_el) + '.png', dpi=800)
+        plt.close(fig)
+
+
+    # compositions_dict = dict(zip(element_symbols, [[]] * len(element_symbols)))
+    # for key, val in master_dict:
+    #     fla = get_formula(val[0]['ccdata'], extended_out=True)['fdict']
+    #     for el_sym in element_symbols:
+    #         compositions_dict[el_sym].append(fla[el_sym])
+
 
 
 if __name__ == '__main__':
