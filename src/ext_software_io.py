@@ -257,5 +257,5 @@ if __name__ == '__main__':
 
 
     pass
-    # poscar_fname = '/home/vsbat/SYNC/00_Current_PyWork/20200319_Catalysis_project/CuAu/CuAu_varcomp_6_10_6_10/results2/POSCAR'
+    # poscar_fname = '/home/vsbat/SYNC/00_Current_PyWork/20200319_CuAu_project/CuAu/CuAu_varcomp_6_10_6_10/results2/POSCAR'
     # poscar_atoms = ase_read(poscar_fname)
