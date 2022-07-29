@@ -35,6 +35,9 @@ def process_db_files(db_pkl_fnames,
                      write_text = True,
                      first_connected_map=None):
 
+    if element_nos and not element_symbols:
+        element_symbols = tuple(element_labels[i] for i in element_nos)
+
     master_dict = db_files_to_dict(db_pkl_fnames,
                                    element_nos=element_nos,
                                    element_symbols=element_symbols)
@@ -74,8 +77,6 @@ def db_files_to_dict(db_pkl_fnames,
     if isinstance(db_pkl_fnames, str):
         db_pkl_fnames = [db_pkl_fnames]
 
-    if element_nos and not element_symbols:
-        element_symbols = tuple(element_labels[i] for i in element_nos)
     elif element_symbols and not element_nos:
         element_nos = tuple(ptable.number[sym] for sym in element_symbols)
     if res_folder is None:
@@ -126,13 +127,16 @@ def write_db_to_poscars(master_dict, poscar_fname, vacuumsize=15., append=True):
 
 
 def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files', first_connected_map=None):
-    best_list, best_idcs = list_of_bests(master_dict, first_connected_map=first_connected_map, n_lowest=n_lowest)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    best_list, best_idcs = list_of_bests(master_dict, first_connected_map=first_connected_map, n_lowest=n_lowest, lowest_inds_dict_out=True)
     for cmp, val in master_dict.items():
         for i, lowest_k in enumerate(best_idcs[cmp]):
-            val['ccdata'][lowest_k].metadata['comments'] = ['dE = {:6.5f}'.format(val['energies'][lowest_k] -
-                                                                                  val['energies'][best_idcs[0]])]
+            val['ccdata'][lowest_k].metadata['comments'] = [get_formula(val['ccdata'][lowest_k]) +
+                                                            ' dE = {:6.5f}'.format(val['energies'][lowest_k] -
+                                                                                  val['energies'][best_idcs[cmp][0]])]
             val['ccdata'][lowest_k].writexyz(outdir + '/' + val['taskname'][lowest_k] + '_g' +
-                                             str(best_idcs[i]) + '.xyz')
+                                             str(i) + '.xyz')
 
 
 def list_of_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds_dict_out=True):
@@ -168,7 +172,7 @@ def list_of_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds
         gap = val['gap'][n_lowest_inds[0]]
         list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed] + [n_lowest_inds[0]])
         if lowest_inds_dict_out:
-            n_lowest_dict['cmp'] = n_lowest_inds
+            n_lowest_dict[comp] = n_lowest_inds
     if lowest_inds_dict_out:
         return list_fmt_best, n_lowest_dict
     else:
@@ -190,6 +194,13 @@ def write_txt_data(list_fmt_best, element_symbols, res_folder):
 
 
 def get_sorted_compositions(master_dict):
+    """
+    Utility for getting sorted list of compositions, where latest index is sorted first
+    Example: dictionary consists of compositions [1,3], [2,4], [1,2], [2,1]
+    Output: [[1,2], [1,3], [2,1], [2,4]]
+    @param master_dict: master-dictionary extracted from database(s)
+    @return: list of lists
+    """
     composition_array = np.array([list(key) for key in master_dict.keys()])
     composition_array = composition_array[composition_array[:, -1].argsort()]
     for ind in range(-2, -composition_array.shape[1] - 1, -1):
