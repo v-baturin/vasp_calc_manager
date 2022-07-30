@@ -53,7 +53,7 @@ def gauformat2dict(string: str, gau_route=False, case_sensitive=False):
         # Search for theory level substring ('b3lyp/lanl2dz')
         approach_basis = ''
         for k, item in enumerate(list_from_string):
-            if re.match('[^/ ()]+/.*', item):
+            if re.match('[^/]+/[^=]+$', item):
                 approach_basis = item
                 del list_from_string[k]
 
