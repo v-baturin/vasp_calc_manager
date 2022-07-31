@@ -142,7 +142,6 @@ class GauCalcDB(list):
             n_logs = 0
             for k_log_file in all_logs:
                 curr_folder_full = str(k_log_file.parent)
-                curr_folder = str(k_log_file.parts[-2])
                 work_gjf_name = sh_execute('ls ' + curr_folder_full + '/*.gjf').strip()
 
                 jobfnamesearch = glob.glob(curr_folder_full + '/*.sh')
@@ -154,10 +153,10 @@ class GauCalcDB(list):
                 out_fname_search = glob.glob(curr_folder_full + '/' + outfile_pattern)
                 if out_fname_search:
                     out_fname = out_fname_search[0].split('/')[-1]
-                    newstatus = 'L'
+                    newstatus = 'L'  # Loaded
                 else:
                     out_fname = outfile_pattern.replace('*', 'log')
-                    newstatus = 'P'
+                    newstatus = 'P'  # Pending
 
                 chksearch = glob.glob(curr_folder_full + '/*.chk')
                 chk_fname = chksearch[0].split('/')[-1] if chksearch else None
@@ -252,7 +251,7 @@ class GauCalcDB(list):
                     if checkflag(scenarios_dct['normal']['flags'], logfile, tail=scenarios_dct['normal']['tail']):
                         print(task.name + ': DONE')
                         task.status = 'D'
-                        sh_execute('rm ' + task.folder + '/*.rwf')
+                        # sh_execute('rm ' + task.folder + '/*.rwf')
                         continue
                 elif hasattr(task, 'old_coords'):
                     task.gjf['molstruct'] = task.old_coords
@@ -340,14 +339,18 @@ class GauCalcDB(list):
         filename_en = join(self.master_folder, filename_en)
         with open(filename_en, 'w') as en_fid:
             en_fid.write('\n' + '*' * 10 + ' {:%Y-%m-%d %H:%M} '.format(datetime.now()) + '*' * 10 + '\n')
-            en_fid.write('SCF energies in eV:\n')
+            en_fid.write('SCF energies in eV ( also E+ZPE if available):\n')
             for task in self:
                 if task.ccdata and hasattr(task.ccdata, 'scfenergies'):
-                    en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
+                    str = '%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1])
+                    if hasattr(task.ccdata, 'zpve'):
+                        str += '\t %-.10f' % (task.ccdata.scfenergies[-1] + task.ccdata.zpve * 27.21138624598)
+                    en_fid.write(str + '\n')
                 elif task.status == 'D':
-                    last_ccdata, atoms = parse_gout(task.folder + '/' + task.out)
-                    task.ccdata = last_ccdata
-                    en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
+                    print('!!! This is weird, task "' + task.name + '" is done, but has no ccdata')
+                    # last_ccdata, atoms = parse_gout(task.folder + '/' + task.out)
+                    # task.ccdata = last_ccdata
+                    # en_fid.write('%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1]) + '\n')
         with open(filename_pkl, 'wb') as pkl_fid:
             pickle.dump(self, pkl_fid)
 
