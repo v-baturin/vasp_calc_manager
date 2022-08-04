@@ -15,6 +15,8 @@ from graph_utils.formatting import cm2inch, set_ax_position_cm
 ptable = pt()
 element_labels = np.array(ptable.element[:])
 
+HARTREE = 27.211386245988
+
 def process_db_folder(db_fold, *args, **kwargs):
     """
     @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
@@ -26,40 +28,57 @@ def process_db_folder(db_fold, *args, **kwargs):
     return process_db_files(db_pkl_fnames, *args, **kwargs)
 
 
-def process_db_files(db_pkl_fnames,
+def process_db_files(db_path,
                      element_nos=None, element_symbols=None,
                      res_folder=None,
                      n_isoms=1,
                      write_poscars = False,
                      write_xyz=False,
                      write_text = True,
-                     first_connected_map=None):
+                     first_connected_map=None,
+                     sortby='energies'):
 
     if element_nos and not element_symbols:
         element_symbols = tuple(element_labels[i] for i in element_nos)
 
-    master_dict = db_files_to_dict(db_pkl_fnames,
-                                   element_nos=element_nos,
-                                   element_symbols=element_symbols)
+    master_dict = db_path_to_dict(db_path,
+                                  element_nos=element_nos,
+                                  element_symbols=element_symbols)
     if write_poscars:
         write_db_to_poscars(master_dict,
-                      res_folder + '/' + db_pkl_fnames[0].split('/')[-1].split('.')[0] + 'POSCARS')
+                            res_folder + '/' + db_path.split('/')[-1].split('.')[0] + 'POSCARS')
     if write_xyz:
         write_xyz_of_n_lowest(master_dict, n_lowest=n_isoms, outdir=res_folder + '/xyz_files',
-                              first_connected_map=first_connected_map)
+                              first_connected_map=first_connected_map, sortby=sortby)
     if write_text:
-        best_list = list_of_bests(master_dict, first_connected_map=first_connected_map, lowest_inds_dict_out=False)
-        write_txt_data(best_list, element_symbols=element_symbols, res_folder=res_folder)
+        best_list = sorted_bests(master_dict, first_connected_map=first_connected_map, lowest_inds_dict_out=False,
+                                 sortby=sortby)
+        write_txt_data(best_list, element_symbols=element_symbols, res_folder=res_folder, sortby=sortby)
 
     return master_dict
 
+def get_task_db(path):
+    if os.path.isfile(path):
+        pkl_files = [path]
+    elif os.path.isdir(path):
+        pkl_files = Path(path).rglob('*.pkl')
+    task_db = []
+    for pklfile in pkl_files:
+        print('reading gau_db file ' + str(pklfile))
+        with open(pklfile, 'rb') as pklfid:
+            loaded_tasks = pickle.load(pklfid)
+            for tsk in loaded_tasks:
+                tsk.db_file = str(pklfile)
+            task_db += loaded_tasks
+
+    return task_db
 
 
 
-def db_files_to_dict(db_pkl_fnames,
-                     element_nos=None, element_symbols=None,
-                     res_folder=None,
-                     skipnangap=False):
+def db_path_to_dict(db_path,
+                    element_nos=None, element_symbols=None,
+                    res_folder=None,
+                    skipnangap=False):
 
     """
     Utility analysing the folder containing database pkl files (recursively) and returning
@@ -74,42 +93,37 @@ def db_files_to_dict(db_pkl_fnames,
     @param element_nos: tuple with periodic numbers of elements in the desired order, e.g. (6, 1) for C H
 
     """
-    if isinstance(db_pkl_fnames, str):
-        db_pkl_fnames = [db_pkl_fnames]
-
-    elif element_symbols and not element_nos:
+    if element_symbols and not element_nos:
         element_nos = tuple(ptable.number[sym] for sym in element_symbols)
     if res_folder is None:
         res_folder = '.'
     if not os.path.exists(res_folder):
         os.makedirs(res_folder)
 
+    database = get_task_db(db_path)
     master_dict = {}
-    for db_file in db_pkl_fnames:
-        with open(db_file, 'rb') as db_fid:
-            database = pickle.load(db_fid)
-            for task in database:
-                try:
-                    comp = tuple(np.count_nonzero(task.ccdata.atomnos == at_no) for at_no in element_nos)
-                except AttributeError:
-                    print(task.name + ' in ' + db_file + ' : job failed')
-                    continue
-                gap = get_gap(task.ccdata)
-                if (skipnangap or np.isfinite(gap)):
-                    if comp in master_dict:
-                        master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
-                        master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
-                        master_dict[comp]['ccdata'].append(task.ccdata)
-                        master_dict[comp]['taskname'].append(task.name)
-                        master_dict[comp]['where'].append(db_file.split('/')[-1])
-                        master_dict[comp]['gap'].append(gap)
-                    else:
-                        master_dict[comp] = {'old_ind': [int(task.name.split('_')[-1])],
-                                             'energies': [task.ccdata.scfenergies[-1]],
-                                             'ccdata': [task.ccdata],
-                                             'taskname': [task.name],
-                                             'where': [db_file.split('/')[-1]],
-                                             'gap':[gap]}
+    for task in database:
+        try:
+            comp = tuple(np.count_nonzero(task.ccdata.atomnos == at_no) for at_no in element_nos)
+        except AttributeError:
+            print(task.name + ' in ' + task.db_file + ' : job failed')
+            continue
+        gap = get_gap(task.ccdata)
+        if (skipnangap or np.isfinite(gap)):
+            if comp in master_dict:
+                master_dict[comp]['old_ind'].append(int(task.name.split('_')[-1]))
+                master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
+                master_dict[comp]['ccdata'].append(task.ccdata)
+                master_dict[comp]['taskname'].append(task.name)
+                master_dict[comp]['where'].append(task.db_file.split('/')[-1])
+                master_dict[comp]['gap'].append(gap)
+            else:
+                master_dict[comp] = {'old_ind': [int(task.name.split('_')[-1])],
+                                     'energies': [task.ccdata.scfenergies[-1]],
+                                     'ccdata': [task.ccdata],
+                                     'taskname': [task.name],
+                                     'where': [task.db_file.split('/')[-1]],
+                                     'gap':[gap]}
     return master_dict
 
 def write_db_to_poscars(master_dict, poscar_fname, vacuumsize=15., append=True):
@@ -126,20 +140,21 @@ def write_db_to_poscars(master_dict, poscar_fname, vacuumsize=15., append=True):
                   vasp5=True)
 
 
-def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files', first_connected_map=None):
+def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files', first_connected_map=None, sortby='energies'):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-    best_list, best_idcs = list_of_bests(master_dict, first_connected_map=first_connected_map, n_lowest=n_lowest, lowest_inds_dict_out=True)
+    best_list, best_idcs = sorted_bests(master_dict, first_connected_map=first_connected_map, n_lowest=n_lowest,
+                                        lowest_inds_dict_out=True, sortby=sortby)
     for cmp, val in master_dict.items():
         for i, lowest_k in enumerate(best_idcs[cmp]):
             val['ccdata'][lowest_k].metadata['comments'] = [get_formula(val['ccdata'][lowest_k]) +
-                                                            ' dE = {:6.5f}'.format(val['energies'][lowest_k] -
-                                                                                  val['energies'][best_idcs[cmp][0]])]
+                                                            ' d' + sortby + ' = {:6.5f}'.format(val[sortby][lowest_k] -
+                                                                                  val[sortby][best_idcs[cmp][0]])]
             val['ccdata'][lowest_k].writexyz(outdir + '/' + val['taskname'][lowest_k] + '_g' +
                                              str(i) + '.xyz')
 
 
-def list_of_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds_dict_out=True):
+def sorted_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds_dict_out=True, sortby='energies'):
     """
     @param first_connected_map: BINARY SYSTEMS ONLY! (SiH, PdBi etc.)  2d array of numbers of lowest fully-connected
                                  isomers
@@ -164,13 +179,13 @@ def list_of_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds
             lowest_connected = int(first_connected_map[comp])
         else:
             lowest_connected = 0
-        new_ind = np.argsort(val['energies'])
+        new_ind = np.argsort(val[sortby])
         n_lowest_inds = new_ind[np.arange(lowest_connected, min(lowest_connected + n_lowest, len(new_ind)))]
         assert len(n_lowest_inds) > 0, "Invalid first_connected_map"
-        lowest_en = val['energies'][n_lowest_inds[0]]
+        lowest_val = val[sortby][n_lowest_inds[0]]
         changed = (n_lowest_inds[0] != 0)
         gap = val['gap'][n_lowest_inds[0]]
-        list_fmt_best.append([list(comp)] + [lowest_en] + [gap] + [changed] + [n_lowest_inds[0]])
+        list_fmt_best.append([list(comp)] + [lowest_val] + [gap] + [changed] + [n_lowest_inds[0]])
         if lowest_inds_dict_out:
             n_lowest_dict[comp] = n_lowest_inds
     if lowest_inds_dict_out:
@@ -179,14 +194,14 @@ def list_of_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds
         return list_fmt_best
 
 
-def write_txt_data(list_fmt_best, element_symbols, res_folder):
+def write_txt_data(list_fmt_best, element_symbols, res_folder, sortby='energies'):
     n_el = len(list_fmt_best[0][0])
     if n_el == 2:
         flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
         list_fmt2table(np.array(flatten_list)[:, [0, 1, 3]], outfile=res_folder + '/gap_table.txt')
     with open(res_folder + '/n_m_Enm_gap_2.txt', 'w') as stats_fid, open(res_folder + '/all_gaps.txt', 'w') as gaps_fid:
-        stats_fid.write(('%s\t' * n_el) % element_symbols + 'Etot, eV\tGap, ev\tinitial ind\n')
+        stats_fid.write(('%s\t' * n_el) % element_symbols + ' ' + sortby + '\tGap, ev\tinitial ind\n')
         gaps_fid.write(('%s\t' * n_el) % element_symbols + '\tGap, ev\n')
         for dt in list_fmt_best:
             stats_fid.write(('%d\t' * n_el + '%.6f\t%.6f\t%s\t%d\n') % tuple(dt[0] + dt[1:]))
@@ -195,7 +210,7 @@ def write_txt_data(list_fmt_best, element_symbols, res_folder):
 
 def get_sorted_compositions(master_dict):
     """
-    Utility for getting sorted list of compositions, where latest index is sorted first
+    Utility for getting sorted list of compositions, where the latest index is sorted first
     Example: dictionary consists of compositions [1,3], [2,4], [1,2], [2,1]
     Output: [[1,2], [1,3], [2,1], [2,4]]
     @param master_dict: master-dictionary extracted from database(s)
@@ -277,4 +292,5 @@ def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_fo
 
 
 if __name__ == '__main__':
-    pass
+    get_task_db('databases')
+    print('hello!')
