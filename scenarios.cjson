@@ -121,6 +121,6 @@
                              "corrector" : {}},
                 "dmatrix_breaks_sym":{"flags": "Rerun with SCF=IntRep", "tail":50,
                                         "msg": "SCF=IntRep error",
-                                        "Corrector": {"route": {"scf":{"intrep":null}}}}
+                                        "сorrector": {"route": {"scf":{"intrep":null}}}}
                }
 }
