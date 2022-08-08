@@ -118,6 +118,9 @@
                },
   "fails":     {"bad_basis": {"flags": "Atomic number out of range", "tail": 50,
                              "msg"  : "Insufficient basis",
-                             "corrector" : {}}
+                             "corrector" : {}},
+                "dmatrix_breaks_sym":{"flags": "Rerun with SCF=IntRep", "tail":50,
+                                        "msg": "SCF=IntRep error",
+                                        "Corrector": {"route": {"scf":{"intrep":null}}}}
                }
 }

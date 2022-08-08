@@ -1,11 +1,14 @@
 *.txt
 *.pkl
+*.out
+*.gz
 log
 RECALC*
 __pycache__
 __init__.py
 *.pyc
 src/__pycache__
+results*
 DONE
 STOP
 
