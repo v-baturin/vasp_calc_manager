@@ -8,6 +8,7 @@ from ase import Atoms
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
 from genutils.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
+from genutils.misc import rgetattr
 from matplotlib import pyplot as plt
 from graph_utils.my_graphs import draw_spectrum
 from graph_utils.formatting import cm2inch, set_ax_position_cm
@@ -17,53 +18,55 @@ element_labels = np.array(ptable.element[:])
 
 HARTREE = 27.211386245988
 
-def process_db_folder(db_fold, *args, **kwargs):
+def process_db_path(db_path, *args, **kwargs):
     """
-    @param db_fold: string, a folder where pkl's with GauCalcDB's are stored
-    @param args: arguments to be passed to process_db_files
-    @param kwargs: keyword arguments to be passed to process_db_files
+    @param db_path: string, a path of folder with pkl database files or of a single pkl file
+    @param args: arguments to be passed to process_db_file_list
+    @param kwargs: keyword arguments to be passed to process_db_file_list
     @return:
     """
-    db_pkl_fnames = [str(x) for x in Path(db_fold).rglob('*.pkl')]
-    return process_db_files(db_pkl_fnames, *args, **kwargs)
+    if os.path.isfile(db_path) and 'pkl' in str(db_path):
+        pkl_file_list = [db_path]
+    elif os.path.isdir(db_path):
+        pkl_file_list = Path(db_path).rglob('*.pkl')
+    elif isinstance(db_path, list):
+        pkl_file_list = db_path
+    return process_db_file_list(pkl_file_list, *args, **kwargs)
 
 
-def process_db_files(db_path,
-                     element_nos=None, element_symbols=None,
-                     res_folder=None,
-                     n_isoms=1,
-                     write_poscars = False,
-                     write_xyz=False,
-                     write_text = True,
-                     first_connected_map=None,
-                     sortby='energies'):
+def process_db_file_list(file_list,
+                         element_nos=None, element_symbols=None,
+                         res_folder=None,
+                         n_isoms=1,
+                         write_poscars = False,
+                         write_xyz=False,
+                         write_text = True,
+                         first_connected_map=None,
+                         sortby='energies'):
 
     if element_nos and not element_symbols:
         element_symbols = tuple(element_labels[i] for i in element_nos)
 
-    master_dict = db_path_to_dict(db_path,
+    master_dict = db_path_to_dict(file_list,
                                   element_nos=element_nos,
                                   element_symbols=element_symbols)
     if write_poscars:
         write_db_to_poscars(master_dict,
-                            res_folder + '/' + db_path.split('/')[-1].split('.')[0] + 'POSCARS')
+                            str(res_folder) + '/POSCARS')
     if write_xyz:
-        write_xyz_of_n_lowest(master_dict, n_lowest=n_isoms, outdir=res_folder + '/xyz_files',
+        write_xyz_of_n_lowest(master_dict, n_lowest=n_isoms, outdir=str(res_folder) + '/xyz_files',
                               first_connected_map=first_connected_map, sortby=sortby)
     if write_text:
         best_list = sorted_bests(master_dict, first_connected_map=first_connected_map, lowest_inds_dict_out=False,
                                  sortby=sortby)
-        write_txt_data(best_list, element_symbols=element_symbols, res_folder=res_folder, sortby=sortby)
+        write_txt_data(best_list, element_symbols=element_symbols, res_folder=str(res_folder), sortby=sortby)
 
     return master_dict
 
-def get_task_db(path):
-    if os.path.isfile(path):
-        pkl_files = [path]
-    elif os.path.isdir(path):
-        pkl_files = Path(path).rglob('*.pkl')
+
+def get_task_db(file_list):
     task_db = []
-    for pklfile in pkl_files:
+    for pklfile in file_list:
         print('reading gau_db file ' + str(pklfile))
         with open(pklfile, 'rb') as pklfid:
             loaded_tasks = pickle.load(pklfid)
@@ -75,7 +78,8 @@ def get_task_db(path):
 
 
 
-def db_path_to_dict(db_path,
+def db_path_to_dict(file_list,
+                    sort_by = 'scfenergies', last_value = True,
                     element_nos=None, element_symbols=None,
                     res_folder=None,
                     skipnangap=False):
@@ -100,7 +104,7 @@ def db_path_to_dict(db_path,
     if not os.path.exists(res_folder):
         os.makedirs(res_folder)
 
-    database = get_task_db(db_path)
+    database = get_task_db(file_list)
     master_dict = {}
     for task in database:
         try:

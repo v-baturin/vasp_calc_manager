@@ -179,25 +179,6 @@ class GauCalcDB(list):
     def __str__(self):
         return '<GauCalcDB: ' + str(len(self)) + ' GauTask objects in ' + self.master_folder + '>'
 
-    def submit_jobs(self, n_par_calcs=3):
-        submitted = new = 0
-        for i, task in enumerate(self):
-            if task.status == 'R':
-                submitted += 1
-            if task.status == 'P':
-                task.copyfiles()
-                try:
-                    task.submit_job()
-                except IndexError:
-                    print('Failed to submit: ' + task.name)
-                else:
-                    self[i].status = 'R'
-                    submitted += 1
-                    new += 1
-            if submitted >= n_par_calcs:
-                break
-        print('Submitted = ' + str(new) + '; Total running = ' + str(submitted))
-        return new, submitted
 
     def update(self, scenarios='scenarios.cjson'):
 
@@ -300,6 +281,26 @@ class GauCalcDB(list):
                         print(task.name + ': Restart')
                         task.k_iter += 1
                         task.status = 'P'
+
+    def submit_jobs(self, n_par_calcs=3):
+        submitted = new = 0
+        for i, task in enumerate(self):
+            if task.status == 'R':
+                submitted += 1
+            if task.status == 'P':
+                task.copyfiles()
+                try:
+                    task.submit_job()
+                except IndexError:
+                    print('Failed to submit: ' + task.name)
+                else:
+                    self[i].status = 'R'
+                    submitted += 1
+                    new += 1
+            if submitted >= n_par_calcs:
+                break
+        print('Submitted = ' + str(new) + '; Total running = ' + str(submitted))
+        return new, submitted
 
     def get_stats(self, stats_file='stats.txt', verb=False):
 
