@@ -1,0 +1,3 @@
+[submodule "genutils"]
+	path = genutils
+	url = git@github.com:v-baturin/genutils.git
