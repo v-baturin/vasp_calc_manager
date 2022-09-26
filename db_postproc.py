@@ -44,14 +44,15 @@ def process_db_file_list(file_list,
                          write_xyz=False,
                          write_text = True,
                          first_connected_map=None,
-                         sortby='energies'):
+                         sort_by: Union[str, Callable] = 'ccdata.scfenergies'):
 
     if element_nos and not element_symbols:
         element_symbols = tuple(element_labels[i] for i in element_nos)
 
     master_dict = db_file_list_to_dict(file_list,
                                        element_nos=element_nos,
-                                       element_symbols=element_symbols)
+                                       element_symbols=element_symbols, first_connected_map=first_connected_map,
+                                       sort_by=sort_by)
     if write_poscars:
         write_db_to_poscars(master_dict,
                             str(res_folder) + '/POSCARS')
