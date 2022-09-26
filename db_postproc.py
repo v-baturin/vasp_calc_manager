@@ -225,7 +225,7 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
 #         return list_fmt_best
 
 
-def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['ccdata.scfenergies', 'fold_ind', 'db_file'], n_isom=1):
+def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['ccdata.scfenergies', get_gap, 'db_file'], n_isom=1):
     n_el = len(list(master_dict.keys())[0])
     if attributes is 'energies':
         attributes = ['ccdata.scfenergies']
@@ -246,8 +246,8 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['
         else:
             str_attr.append(attr.split('.')[-1])
     sorted_comps = get_sorted_compositions(master_dict)
-    with open(res_folder + '/n_m_Enm_gap_2.txt', 'w') as stats_fid:
-        stats_fid.write(('%s\t' * (n_el + len(attributes)) ) % (element_symbols +  tuple(attributes)) + '\n')
+    with open(res_folder + '/output.txt', 'w') as stats_fid:
+        stats_fid.write(('%s\t' * (n_el + len(attributes)) ) % (element_symbols +  tuple(str_attr)) + '\n')
         for comp in sorted_comps:
             cmp = tuple(comp)
             for i in range(np.min((n_isom, len(master_dict[cmp])))):
