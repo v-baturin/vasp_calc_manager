@@ -12,8 +12,8 @@ from cclib.parser.utils import PeriodicTable as pt
 from genutils.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
 from genutils.misc import rhasattr, rgetattr
 from matplotlib import pyplot as plt
-from graph_utils.my_graphs import draw_spectrum
-from graph_utils.formatting import cm2inch, set_ax_position_cm
+from ab_initio_postprocessing.graph_utils import draw_spectrum
+from ab_initio_postprocessing.graph_utils import cm2inch, set_ax_position_cm
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])
@@ -260,21 +260,6 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['
                     else:
                         res_str += ('\t' + str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
                 stats_fid.write(res_str + '\n')
-
-
-def get_sorted_compositions(master_dict):
-    """
-    Utility for getting sorted list of compositions, where the latest index is sorted first
-    Example: dictionary consists of compositions [1,3], [2,4], [1,2], [2,1]
-    Output: [[1,2], [1,3], [2,1], [2,4]]
-    @param master_dict: master-dictionary extracted from database(s)
-    @return: list of lists
-    """
-    composition_array = np.array([list(key) for key in master_dict.keys()])
-    composition_array = composition_array[composition_array[:, -1].argsort()]
-    for ind in range(-2, -composition_array.shape[1] - 1, -1):
-        composition_array = composition_array[composition_array[:, ind].argsort(kind='mergesort')]
-    return composition_array
 
 
 def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_folder='spectra_graphs', groupped=True,
