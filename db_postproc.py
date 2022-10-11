@@ -4,16 +4,16 @@ import warnings
 from typing import Union, Callable, Any, List
 import pickle
 import numpy as np
-from tools_stability.aux_routines import list_fmt2table, table2list_fmt
+from src.ext_submodules.ab_initio_postprocessing.tools_stability.aux_routines import list_fmt2table, table2list_fmt
 from ase.io import read, write
 from ase import Atoms
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
-from genutils.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
-from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
+from src.ext_submodules.ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
+from src.ext_submodules.genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
-from ab_initio_postprocessing.graph_utils import draw_spectrum
-from ab_initio_postprocessing.graph_utils import cm2inch, set_ax_position_cm
+from src.ext_submodules.ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
+from src.ext_submodules.ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])

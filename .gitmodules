@@ -1,3 +1,6 @@
-[submodule "genutils"]
-	path = genutils
-	url = git@github.com:v-baturin/genutils.git
+[submodule "src/ext_submodules/genutils"]
+	path = src/ext_submodules/genutils
+	url = https://github.com/v-baturin/genutils.git
+[submodule "src/ext_submodules/ab_initio_postprocessing"]
+	path = src/ext_submodules/ab_initio_postprocessing
+	url = https://github.com/v-baturin/ab_initio_postprocessing.git

@@ -5,8 +5,8 @@ import math
 import numbers
 import os.path
 import copy
-from src.common_tools import recursively_map_to_vals, recursive_map_to_keys
-from src.ext_software_io import gauformat2dict, dict2gauformat, xyz_2atoms, atoms_2_str
+from .common_tools import recursively_map_to_vals, recursive_map_to_keys
+from .ext_software_io import gauformat2dict, dict2gauformat, xyz_2atoms, atoms_2_str
 
 
 class Gjf(dict):
