@@ -14,6 +14,7 @@ from src.ext_submodules.genutils.misc import rhasattr, rgetattr, get_sorted_comp
 from matplotlib import pyplot as plt
 from src.ext_submodules.ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
 from src.ext_submodules.ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
+import argparse
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])
@@ -184,47 +185,6 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
             val['tasks'][i].ccdata.writexyz(outdir + '/' + get_formula(val['tasks'][i].ccdata) + '_' + str(val['fold_ind'][i]) + '_g' +
                                              str(i) + '.xyz')
 
-
-# def sorted_bests(master_dict, first_connected_map=None, n_lowest=1, lowest_inds_dict_out=True, sortby='energies'):
-#     """
-#     @param first_connected_map: BINARY SYSTEMS ONLY! (SiH, PdBi etc.)  2d array of numbers of lowest fully-connected
-#                                  isomers
-#     @return: :rtype: (dict, list)
-#     Return
-#     list of information of lowest energy structures for each composition.
-#     Each element of the list is of the following format:
-#     [[composition], energy, gap, is_switched]
-#     Example for C6H12, which has lowest structure different from the one obtained from :
-#     [[6, 1], -2255.445, 3.5, True]
-#     """
-#
-#     list_fmt_best = []
-#     n_lowest_dict = {}
-#
-#     sorted_cmp = get_sorted_compositions(master_dict)
-#
-#     for cmp in sorted_cmp:
-#         comp = tuple(cmp)
-#         val = master_dict[comp]
-#         if first_connected_map is not None:
-#             lowest_connected = int(first_connected_map[comp])
-#         else:
-#             lowest_connected = 0
-#         new_ind = np.argsort(val[sortby])
-#         n_lowest_inds = new_ind[np.arange(lowest_connected, min(lowest_connected + n_lowest, len(new_ind)))]
-#         assert len(n_lowest_inds) > 0, "Invalid first_connected_map"
-#         lowest_val = val[sortby][n_lowest_inds[0]]
-#         changed = (n_lowest_inds[0] != 0)
-#         gap = val['gap'][n_lowest_inds[0]]
-#         list_fmt_best.append([list(comp)] + [lowest_val] + [gap] + [changed] + [n_lowest_inds[0]])
-#         if lowest_inds_dict_out:
-#             n_lowest_dict[comp] = n_lowest_inds
-#     if lowest_inds_dict_out:
-#         return list_fmt_best, n_lowest_dict
-#     else:
-#         return list_fmt_best
-
-
 def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['ccdata.scfenergies', get_gap, 'db_file'], n_isom=1):
     n_el = len(list(master_dict.keys())[0])
     if attributes is 'energies':
@@ -331,5 +291,10 @@ def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_fo
 
 
 if __name__ == '__main__':
-    get_task_db('databases')
-    print('hello!')
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-f", "--recalc_folder", required=False, help="Directory containing results", default='results')
+    input_kwargs = vars(ap.parse_args())
+    search_dir = input_kwargs['recalc_folder']
+    pkl_files = Path(search_dir).rglob('*.pkl')
+    process_db_file_list(pkl_files, element_symbols=('P',), res_folder=search_dir + '/postproc', write_xyz=True,
+                         write_text=True, n_isoms=1)
