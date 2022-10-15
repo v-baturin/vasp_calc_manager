@@ -4,7 +4,6 @@ import warnings
 from typing import Union, Callable, Any, List
 import pickle
 import numpy as np
-from src.ext_submodules.ab_initio_postprocessing.tools_stability.aux_routines import list_fmt2table, table2list_fmt
 import sys
 sys.path.append('src/ext_submodules')
 from ase.io import read, write
