@@ -5,16 +5,19 @@ from typing import Union, Callable, Any, List
 import pickle
 import numpy as np
 from src.ext_submodules.ab_initio_postprocessing.tools_stability.aux_routines import list_fmt2table, table2list_fmt
+import sys
+sys.path.append('src/ext_submodules')
 from ase.io import read, write
 from ase import Atoms
 from pathlib import Path
 from cclib.parser.utils import PeriodicTable as pt
-from src.ext_submodules.ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
-from src.ext_submodules.genutils.misc import rhasattr, rgetattr, get_sorted_compositions
+from ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
+from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
-from src.ext_submodules.ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
-from src.ext_submodules.ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
+from ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
+from ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
 import argparse
+
 
 ptable = pt()
 element_labels = np.array(ptable.element[:])
@@ -187,7 +190,7 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
 
 def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['ccdata.scfenergies', get_gap, 'db_file'], n_isom=1):
     n_el = len(list(master_dict.keys())[0])
-    if attributes is 'energies':
+    if attributes == 'energies':
         attributes = ['ccdata.scfenergies']
     # if n_el == 2:
     #     flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
