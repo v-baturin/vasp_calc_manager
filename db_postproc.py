@@ -294,9 +294,11 @@ def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_fo
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("-f", "--recalc_folder", required=False, help="Directory containing results", default='results')
+    ap.add_argument("-f", "--folder", required=True, help="Directory containing results", default='results')
+    ap.add_argument("-l", "--labels", required=True, help="Directory containing results", default='results')
     input_kwargs = vars(ap.parse_args())
-    search_dir = input_kwargs['recalc_folder']
+    search_dir = input_kwargs['folder']
+    atom_labels = tuple(input_kwargs['labels'].strip().split())
     pkl_files = Path(search_dir).rglob('*.pkl')
-    process_db_file_list(pkl_files, element_symbols=('P',), res_folder=search_dir + '/postproc', write_xyz=True,
+    process_db_file_list(pkl_files, element_symbols=atom_labels, res_folder=search_dir + '/postproc', write_xyz=True,
                          write_text=True, n_isoms=1)
