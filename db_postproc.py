@@ -195,9 +195,9 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
     if isinstance(attributes, str):
         attributes = [attributes]
     if 'gap' in attributes:
-        for i in enumerate(attributes):
+        for i in range(len(attributes)):
             if attributes[i] == 'gap':
-                attributes[i] == get_gap
+                attributes[i] = get_gap
     # if n_el == 2:
     #     flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
     #     list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
