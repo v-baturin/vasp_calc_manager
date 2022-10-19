@@ -1,7 +1,7 @@
 #!python3
 import os
 import warnings
-from typing import Union, Callable, Any, List
+from typing import Union, Callable, Any, List, Iterable
 import pickle
 import numpy as np
 import sys
@@ -47,7 +47,8 @@ def process_db_file_list(file_list,
                          write_xyz=False,
                          write_text = True,
                          first_connected_map=None,
-                         sort_by: Union[str, Callable] = 'ccdata.scfenergies'):
+                         sort_by: Union[str, Callable] = 'ccdata.scfenergies',
+                         **kwargs):
 
     if element_nos and not element_symbols:
         element_symbols = tuple(element_labels[i] for i in element_nos)
@@ -64,7 +65,7 @@ def process_db_file_list(file_list,
     if write_text:
         # best_list = sorted_bests(master_dict, first_connected_map=first_connected_map, lowest_inds_dict_out=False,
         #                          sortby=sortby)
-        write_txt_data(master_dict, element_symbols=element_symbols, res_folder=str(res_folder))
+        write_txt_data(master_dict, element_symbols=element_symbols, res_folder=str(res_folder), **kwargs)
 
     return master_dict
 
@@ -187,10 +188,16 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
             val['tasks'][i].ccdata.writexyz(outdir + '/' + get_formula(val['tasks'][i].ccdata) + '_' + str(val['fold_ind'][i]) + '_g' +
                                              str(i) + '.xyz')
 
-def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['ccdata.scfenergies', get_gap, 'db_file'], n_isom=1):
+def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[Iterable, str] =None, n_isom=1):
     n_el = len(list(master_dict.keys())[0])
-    if attributes == 'energies':
-        attributes = ['ccdata.scfenergies']
+    if attributes is None:
+        attributes = ['scfenergies', 'gap']
+    if isinstance(attributes, str):
+        attributes = [attributes]
+    if 'gap' in attributes:
+        for i in enumerate(attributes):
+            if attributes[i] == 'gap':
+                attributes[i] == get_gap
     # if n_el == 2:
     #     flatten_list = [x[0] + x[1:-1] for x in list_fmt_best]
     #     list_fmt2table(np.array(flatten_list)[:, [0, 1, 2]], outfile=res_folder + '/en_table.txt')
@@ -217,8 +224,11 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Any =['
                 for attr in attributes:
                     if hasattr(attr, '__call__'):
                         res_str += ('\t' + str(attr(master_dict[cmp]['tasks'][i].ccdata)))
-                    elif attr == 'ccdata.scfenergies':
-                        res_str += ('\t' + str(rgetattr(master_dict[cmp]['tasks'][i], attr)[-1]))
+                    elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
+                        try:
+                            res_str += ('\t' + str(rgetattr(master_dict[cmp]['tasks'][i], attr)[-1]))
+                        except TypeError:
+                            res_str += ('\t' + str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
                     else:
                         res_str += ('\t' + str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
                 stats_fid.write(res_str + '\n')
@@ -294,11 +304,12 @@ def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_fo
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("-f", "--folder", required=True, help="Directory containing results", default='results')
-    ap.add_argument("-l", "--labels", required=True, help="Directory containing results", default='results')
+    ap.add_argument("-f", "--folder", required=True, help="Directory containing results")
+    ap.add_argument("-l", "--labels", required=True, help="Directory containing results")
+    ap.add_argument("-p", "--properties", required=False, help="Directory containing results", default=None)
     input_kwargs = vars(ap.parse_args())
     search_dir = input_kwargs['folder']
     atom_labels = tuple(input_kwargs['labels'].strip().split())
     pkl_files = Path(search_dir).rglob('*.pkl')
     process_db_file_list(pkl_files, element_symbols=atom_labels, res_folder=search_dir + '/postproc', write_xyz=True,
-                         write_text=True, n_isoms=1)
+                         write_text=True, n_isoms=1, attributes=input_kwargs['properties'])
