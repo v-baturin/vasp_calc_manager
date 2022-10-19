@@ -211,27 +211,27 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
     str_attr = []
     for attr in attributes:
         if hasattr(attr, '__call__'):
-            str_attr.append(attr.__name__)
+            str_attr.append(attr.__name__.replace('get_',''))
         else:
             str_attr.append(attr.split('.')[-1])
     sorted_comps = get_sorted_compositions(master_dict)
     with open(res_folder + '/output.txt', 'w') as stats_fid:
-        stats_fid.write(('%4s' * n_el) % element_symbols +
-                        ('%13s' * len(attributes) ) % tuple(str_attr) + '\n')
+        stats_fid.write(('%4.4s' * n_el) % element_symbols +
+                        ('%13.13s' * len(attributes) ) % tuple(str_attr) + '\n')
         for comp in sorted_comps:
             cmp = tuple(comp)
             for i in range(np.min((n_isom, len(master_dict[cmp])))):
                 res_str = ('%4d' * n_el) % cmp
                 for attr in attributes:
                     if hasattr(attr, '__call__'):
-                        res_str += ('   %10s' % str(attr(master_dict[cmp]['tasks'][i].ccdata)))
+                        res_str += ('   %.10s' % str(attr(master_dict[cmp]['tasks'][i].ccdata)))
                     elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
                         try:
-                            res_str += ('   %10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1]))
+                            res_str += ('   %.10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1]))
                         except TypeError:
-                            res_str += ('   %10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)))
+                            res_str += ('   %.10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)))
                     else:
-                        res_str += ('   %10s' %  str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
+                        res_str += ('   %.10s' %  str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
                 stats_fid.write(res_str + '\n')
 
 
