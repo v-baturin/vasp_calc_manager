@@ -13,8 +13,8 @@ from cclib.parser.utils import PeriodicTable as pt
 from ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
 from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
-from ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
-from ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
+# from ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
+# from ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
 import argparse
 
 
@@ -133,11 +133,6 @@ def db_file_list_to_dict(file_list,
             master_dict[comp]['tasks'].append(task)
             master_dict[comp]['sortvalues'].append(sort_val)
             master_dict[comp]['fold_ind'].append(int(task.name.split('_')[-1]))
-            # master_dict[comp]['energies'].append(task.ccdata.scfenergies[-1])
-            # master_dict[comp]['ccdata'].append(task.ccdata)
-            # master_dict[comp]['taskname'].append(task.name)
-            # master_dict[comp]['where'].append(task.db_file.split('/')[-1])
-            # master_dict[comp]['gap'].append(gap)
         else:
             master_dict[comp] = {  'tasks': [task],
                                    'sortvalues': [sort_val],
@@ -235,64 +230,64 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
                 stats_fid.write(res_str + '\n')
 
 
-def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_folder='spectra_graphs', groupped=True,
-                           format='png', norm_by_natom=False, **drawspectrum_kwargs):
-
-    # plt.rcParams['xtick.major.pad'] = '0'
-    # plt.rcParams['ytick.major.pad'] = '0.'
-    plt.rcParams['xtick.labelsize'] = 7
-    plt.rcParams['ytick.labelsize'] = 7
-
-    if savefiles and not os.path.isdir(save_folder):
-        os.makedirs(save_folder)
-
-    # master_dict =  db_files_to_dict(db_pkl_fnames, element_symbols=element_symbols)
-    composition_array = get_sorted_compositions(master_dict)
-
-    figno = 0
-    for first_el, cnt in np.column_stack(np.unique(composition_array[:, 0], return_counts=True)):
-        if groupped:
-            figno += 1
-            plt.figure()
-            fig, axs = plt.subplots(cnt, 1, sharex=True)
-            plt.setp(axs, yticks=np.array([-0.5, 0, 0.5]))
-            fig.subplots_adjust(hspace=0)
-            fig.set_size_inches(cm2inch(8, 1.5*cnt))
-        for i, composition in enumerate(composition_array[composition_array[:,0] == first_el]):
-            db_key = tuple(composition)
-            db_val = master_dict[db_key]
-            lowest_isom_idx = np.argsort(db_val['energies'])[0]
-            cc_data = db_val['ccdata'][lowest_isom_idx]
-            up_dos, dn_dos, fermi = get_kohn_sham(cc_data)
-
-            up_dos -= fermi
-            if cc_data.nelectrons % 2:
-                dn_dos -= fermi
-            else:
-                dn_dos = None
-
-            if groupped:
-                base = axs[i]
-            else:
-                fig = plt.figure()
-                fig.set_size_inches(cm2inch(8, 3))
-                base = plt
-
-            normalization = np.sum(composition) if norm_by_natom else True
-
-            draw_spectrum(specup=up_dos, specdn=dn_dos, e_fermi=0, shareax=base,
-                          label=get_formula(cc_data), sigma=0.05, normalization=normalization, **drawspectrum_kwargs)
-            plt.xticks(np.arange(*drawspectrum_kwargs['span'], 1))
-            if not groupped:
-                ax = plt.gca()
-                set_ax_position_cm(ax, [0.8, 0.8, 7, 2])
-                ax.tick_params(bottom=True, top=True, direction='in')
-                plt.savefig(save_folder + '/' + get_formula(cc_data) + '.' + format, dpi=600)
-                plt.close()
-
-        if groupped:
-            plt.savefig(save_folder + '/' + element_symbols[0] + str(first_el) + '.' + format, dpi=600)
-            plt.close()
+# def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_folder='spectra_graphs', groupped=True,
+#                            format='png', norm_by_natom=False, **drawspectrum_kwargs):
+#
+#     # plt.rcParams['xtick.major.pad'] = '0'
+#     # plt.rcParams['ytick.major.pad'] = '0.'
+#     plt.rcParams['xtick.labelsize'] = 7
+#     plt.rcParams['ytick.labelsize'] = 7
+#
+#     if savefiles and not os.path.isdir(save_folder):
+#         os.makedirs(save_folder)
+#
+#     # master_dict =  db_files_to_dict(db_pkl_fnames, element_symbols=element_symbols)
+#     composition_array = get_sorted_compositions(master_dict)
+#
+#     figno = 0
+#     for first_el, cnt in np.column_stack(np.unique(composition_array[:, 0], return_counts=True)):
+#         if groupped:
+#             figno += 1
+#             plt.figure()
+#             fig, axs = plt.subplots(cnt, 1, sharex=True)
+#             plt.setp(axs, yticks=np.array([-0.5, 0, 0.5]))
+#             fig.subplots_adjust(hspace=0)
+#             fig.set_size_inches(cm2inch(8, 1.5*cnt))
+#         for i, composition in enumerate(composition_array[composition_array[:,0] == first_el]):
+#             db_key = tuple(composition)
+#             db_val = master_dict[db_key]
+#             lowest_isom_idx = np.argsort(db_val['energies'])[0]
+#             cc_data = db_val['ccdata'][lowest_isom_idx]
+#             up_dos, dn_dos, fermi = get_kohn_sham(cc_data)
+#
+#             up_dos -= fermi
+#             if cc_data.nelectrons % 2:
+#                 dn_dos -= fermi
+#             else:
+#                 dn_dos = None
+#
+#             if groupped:
+#                 base = axs[i]
+#             else:
+#                 fig = plt.figure()
+#                 fig.set_size_inches(cm2inch(8, 3))
+#                 base = plt
+#
+#             normalization = np.sum(composition) if norm_by_natom else True
+#
+#             draw_spectrum(specup=up_dos, specdn=dn_dos, e_fermi=0, shareax=base,
+#                           label=get_formula(cc_data), sigma=0.05, normalization=normalization, **drawspectrum_kwargs)
+#             plt.xticks(np.arange(*drawspectrum_kwargs['span'], 1))
+#             if not groupped:
+#                 ax = plt.gca()
+#                 set_ax_position_cm(ax, [0.8, 0.8, 7, 2])
+#                 ax.tick_params(bottom=True, top=True, direction='in')
+#                 plt.savefig(save_folder + '/' + get_formula(cc_data) + '.' + format, dpi=600)
+#                 plt.close()
+#
+#         if groupped:
+#             plt.savefig(save_folder + '/' + element_symbols[0] + str(first_el) + '.' + format, dpi=600)
+#             plt.close()
 
 
     # compositions_dict = dict(zip(element_symbols, [[]] * len(element_symbols)))
