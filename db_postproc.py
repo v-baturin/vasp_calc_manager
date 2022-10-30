@@ -156,19 +156,21 @@ def db_file_list_to_dict(file_list,
 
     return master_dict
 
-def write_db_to_poscars(master_dict, poscar_fname, vacuumsize=15., append=True):
+def write_db_to_poscars(master_dict, poscar_fname, n_lowest: int =1, vacuumsize=15., append=True):
     sorted_cmp = get_sorted_compositions(master_dict)
     for cmp in sorted_cmp:
         comp = tuple(cmp)
-        for ccd_i in master_dict[comp]['ccdata']:
+        val = master_dict[comp]
+        n_avail = min(n_lowest, len(val['tasks']))
+        for i in range(n_avail):
+            ccd_i = val['tasks'][i].ccdata
             coords = ccd_i.atomcoords[-1]
-            coords -= (np.sum(coords, axis=0)) / len(coords)
             numbers = ccd_i.atomnos
             cell = np.diag(np.max(coords, axis=0) - np.min(coords, axis=0) + vacuumsize)
             pbc = np.ones(3, dtype=bool)
-            write(poscar_fname, Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell), append=append,
-                  vasp5=True)
-
+            atms = Atoms(positions=coords, numbers=numbers, pbc=pbc, cell=cell)
+            atms.center()
+            write(poscar_fname, atms, append=append, vasp5=True)
 
 def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
     if not os.path.exists(outdir):
@@ -176,7 +178,6 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
     for cmp, val in master_dict.items():
         n_avail = min(n_lowest, len(val['tasks']))
         for i in range(n_avail):
-            print(cmp, i)
             val['tasks'][i].ccdata.metadata['comments'] = [get_formula(val['tasks'][i].ccdata) +
                                                      ' dE = {:6.5f}'.format(val['tasks'][i].ccdata.scfenergies[-1] -
                                                                                 val['tasks'][0].ccdata.scfenergies[-1])]
