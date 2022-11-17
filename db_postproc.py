@@ -50,6 +50,7 @@ def process_db_file_list(file_list,
                          sort_by: Union[str, Callable] = 'ccdata.scfenergies',
                          **kwargs):
 
+    os.makedirs(res_folder, exist_ok=True)
     if element_nos and not element_symbols:
         element_symbols = tuple(element_labels[i] for i in element_nos)
 
@@ -77,7 +78,8 @@ def get_task_db(file_list):
         with open(pklfile, 'rb') as pklfid:
             loaded_tasks = pickle.load(pklfid)
             for tsk in loaded_tasks:
-                tsk.db_file = str(pklfile)
+                tsk.db_file = str(pklfile.split('/')[-1])
+                tsk.where = str('/'.join(pklfile.split('/')[:-1]))
                 tsk.fold_ind = int(tsk.name.split('_')[-1])
             task_db += loaded_tasks
 
