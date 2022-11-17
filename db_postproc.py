@@ -78,8 +78,8 @@ def get_task_db(file_list):
         with open(pklfile, 'rb') as pklfid:
             loaded_tasks = pickle.load(pklfid)
             for tsk in loaded_tasks:
-                tsk.db_file = str(pklfile.split('/')[-1])
-                tsk.where = str('/'.join(pklfile.split('/')[:-1]))
+                tsk.db_file = str(pklfile).split('/')[-1]
+                tsk.where = '/'.join(str(pklfile).split('/')[:-1])
                 tsk.fold_ind = int(tsk.name.split('_')[-1])
             task_db += loaded_tasks
 
