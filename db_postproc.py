@@ -9,7 +9,7 @@ sys.path.append('src/ext_submodules')
 from ase.io import read, write
 from ase import Atoms
 from pathlib import Path
-from cclib.parser.utils import PeriodicTable as pt
+from cclib.parser.utils import PeriodicTable, convertor
 from ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
 from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
@@ -19,10 +19,9 @@ from prettytable import PrettyTable
 import argparse
 
 
-ptable = pt()
+ptable = PeriodicTable()
 element_labels = np.array(ptable.element[:])
-
-HARTREE = 27.211386245988
+HARTREE = convertor(1, 'hartree', 'eV')  # cclib-compatible
 
 def process_db_path(db_path, *args, **kwargs):
     """

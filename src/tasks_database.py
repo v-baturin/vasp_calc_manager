@@ -2,12 +2,15 @@ import re
 import pickle
 import os
 import glob
+from cclib import parser
 from datetime import datetime
 from os.path import isfile, join
 from pathlib import Path
 from .ext_software_io import read_geoms, parse_gout, dict2gauformat
 from .gjf import Gjf
 from .common_tools import add_index, sh_execute, checkflag, cjson_load, mk_new_dir
+
+HARTREE = parser.utils.convertor(1, 'hartree', 'eV')  # cclib-compatible
 
 # termination_dict = {'init_gjf':  'initial_config.gjf',
 #                     'normal':   {'flags' : 'Normal termination', 'tail': 1}, # To be modified for orb_coeff etc
@@ -345,7 +348,7 @@ class GauCalcDB(list):
                 if task.ccdata and hasattr(task.ccdata, 'scfenergies'):
                     str = '%-10s' % task.name + ': ' + '%-.10f' % (task.ccdata.scfenergies[-1])
                     if hasattr(task.ccdata, 'zpve'):
-                        str += '\t %-.10f' % (task.ccdata.scfenergies[-1] + task.ccdata.zpve * 27.21138624598)
+                        str += '\t %-.10f' % (task.ccdata.scfenergies[-1] + task.ccdata.zpve * HARTREE)
                     en_fid.write(str + '\n')
                 elif task.status == 'D':
                     print('!!! This is weird, task "' + task.name + '" is done, but has no ccdata')
