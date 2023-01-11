@@ -13,6 +13,7 @@ from cclib.parser.utils import PeriodicTable as pt
 from ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_formula, get_kohn_sham
 from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
+from prettytable import PrettyTable
 # from ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
 # from ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
 import argparse
@@ -213,24 +214,43 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
         else:
             str_attr.append(attr.split('.')[-1])
     sorted_comps = get_sorted_compositions(master_dict)
+
+    stats_table = PrettyTable(list(element_symbols) + list(str_attr))
+    for comp in sorted_comps:
+        cmp = tuple(comp)
+        row_items = []
+        for i in range(np.min((n_isom, len(master_dict[cmp])))):
+            row_items += list(cmp)
+            for attr in attributes:
+                if hasattr(attr, '__call__'):
+                    row_items.append(attr(master_dict[cmp]['tasks'][i].ccdata))
+                elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
+                    try:
+                        row_items.append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1])
+                    except TypeError:
+                        row_items.append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr))
+                else:
+                    row_items.append(rgetattr(master_dict[cmp]['tasks'][i], attr))
+            stats_table.add_row(row_items)
     with open(res_folder + '/output.txt', 'w') as stats_fid:
-        stats_fid.write(('%4.4s' * n_el) % element_symbols +
-                        ('%13.13s' * len(attributes) ) % tuple(str_attr) + '\n')
-        for comp in sorted_comps:
-            cmp = tuple(comp)
-            for i in range(np.min((n_isom, len(master_dict[cmp])))):
-                res_str = ('%4d' * n_el) % cmp
-                for attr in attributes:
-                    if hasattr(attr, '__call__'):
-                        res_str += ('   %.10s' % str(attr(master_dict[cmp]['tasks'][i].ccdata)))
-                    elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
-                        try:
-                            res_str += ('   %.10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1]))
-                        except TypeError:
-                            res_str += ('   %.10s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)))
-                    else:
-                        res_str += ('   %.10s' %  str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
-                stats_fid.write(res_str + '\n')
+        # stats_fid.write(('%4.4s' * n_el) % element_symbols +
+        #                 ('%13.13s' * len(attributes) ) % tuple(str_attr) + '\n')
+        # for comp in sorted_comps:
+        #     cmp = tuple(comp)
+        #     for i in range(np.min((n_isom, len(master_dict[cmp])))):
+        #         res_str = ('%4d' * n_el) % cmp
+        #         for attr in attributes:
+        #             if hasattr(attr, '__call__'):
+        #                 res_str += ('   %.20s' % str(attr(master_dict[cmp]['tasks'][i].ccdata)))
+        #             elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
+        #                 try:
+        #                     res_str += ('   %.20s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1]))
+        #                 except TypeError:
+        #                     res_str += ('   %.20s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)))
+        #             else:
+        #                 res_str += ('   %.20s' %  str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
+                stats_table.vrules = 0
+                stats_fid.write(str(stats_table))
 
 
 # def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_folder='spectra_graphs', groupped=True,
