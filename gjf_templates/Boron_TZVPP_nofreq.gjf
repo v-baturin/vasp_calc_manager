@@ -1,9 +1,9 @@
-%mem=16GB
-%nprocshared=20
+%mem=32GB
+%nprocshared=16
 %rwf=tmp.rwf
 %nosave
 %chk=Boron.chk
-#p pbe1pbe/def2tzvpp scf=(verytight,maxcycle=1000) opt
+#p pbe1pbe/def2tzvpp scf=(maxcycle=1000) opt
 
 B
 
