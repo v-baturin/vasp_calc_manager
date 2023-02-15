@@ -6,7 +6,7 @@
            "jobtemplate": "job_templates/oleg.sh",
            "runcmd": "sbatch ", "jobid": "(?<=job )\\d+",
            "queue": "squeue -u `whoami` | grep -Po '(^\\s*)\\d+' |grep -Po '\\d+'"},
-"FRAM":   {"hostname": "headnode",
+"FRAM":   {"hostname": "fram",
            "jobtemplate": "job_templates/FRAM.sh",
            "runcmd": "sbatch ", "jobid": "(?<=job )\\d+",
            "queue": "squeue -u `whoami` | grep -Po '(^\\s*)\\d+' |grep -Po '\\d+'"},
