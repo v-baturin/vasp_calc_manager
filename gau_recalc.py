@@ -1,4 +1,5 @@
 #!python3
+import numpy as np
 import sys
 import argparse
 import socket
@@ -24,8 +25,9 @@ ap.add_argument("--maxiter", required=False, help='Maximum number of iteration',
 ap.add_argument("--machines", required=False, help='Machines cjson file', default='machines.cjson')
 ap.add_argument("--scenarios", required=False, help='Scenarios cjson file', default='scenarios.cjson')
 ap.add_argument("--min_mult", required=False, help='Use minimal multiplicity', action='store_true')
-ap.add_argument("--exec_time", required=False, help='Execution time, mins',  default='300')
+ap.add_argument("--exec_time", required=False, help='Execution time, mins',  default='inf')
 input_kwargs = vars(ap.parse_args())
+input_kwargs['exec_time'] = np.inf if 'inf' in input_kwargs['exec_time'].casefold() else int(input_kwargs['exec_time'])
 
 if input_kwargs['recalc_folder'] is None:
     input_kwargs['recalc_folder'] = add_index(DEFAULT_RES_FOLDER)
