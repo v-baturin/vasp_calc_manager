@@ -282,7 +282,7 @@ class GauCalcDB(list):
                     else:  # 2. Simple restart
                         task.gjf.recurs_adjust(scenarios_dct['restart']['corrector'])
                         print(task.name + ': Restart')
-                        task.k_iter += 1
+                        # task.k_iter += 1
                         task.status = 'P'
 
     def submit_jobs(self, n_par_calcs=3):
