@@ -1,9 +1,9 @@
-%mem=16GB
-%nprocshared=10
+%mem=32GB
+%nprocshared=40
 %rwf=tmp.rwf
 %nosave
 %chk=LiP.chk
-#p M062X/6-311+G* scf=(verytight,maxcycle=1000) opt freq Temp=1000
+#p M062X/6-311+G* scf=(verytight,maxcycle=4000) opt freq Temp=4000
 
 B
 

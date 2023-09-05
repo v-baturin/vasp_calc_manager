@@ -1,9 +1,9 @@
-%mem=16GB
-%nprocshared=10
+%mem=32GB
+%nprocshared=40
 %rwf=tmp.rwf
 %nosave
 %chk=LiP.chk
-#p B3LYP/def2QZVPP scf=(verytight,maxcycle=1000) opt freq Temp=1000
+#p B3LYP/def2QZVPP scf=(verytight,maxcycle=4000) opt freq Temp=4000
 
 B
 
