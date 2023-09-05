@@ -14,6 +14,7 @@ from ab_initio_postprocessing.abInitio_io_parse.gau_parse import get_gap, get_fo
 from genutils.misc import rhasattr, rgetattr, get_sorted_compositions
 from matplotlib import pyplot as plt
 from prettytable import PrettyTable
+from ab_initio_postprocessing.tools_stability.aux_routines import list_fmt2table
 from ab_initio_postprocessing.graph_utils.my_graphs import draw_spectrum
 from ab_initio_postprocessing.graph_utils.formatting import cm2inch, set_ax_position_cm
 from ab_initio_postprocessing.abInitio_io_parse.gau_parse import getpdos_general
@@ -67,7 +68,7 @@ def process_db_file_list(file_list,
     if write_text:
         # best_list = sorted_bests(master_dict, first_connected_map=first_connected_map, lowest_inds_dict_out=False,
         #                          sortby=sortby)
-        write_txt_data(master_dict, element_symbols=element_symbols, res_folder=str(res_folder), **kwargs)
+        write_txt_data(master_dict, element_symbols=element_symbols, res_folder=str(res_folder), n_isoms=n_isoms, **kwargs)
 
     return master_dict
 
@@ -184,8 +185,8 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
             val['tasks'][i].ccdata.metadata['comments'] = [get_formula(val['tasks'][i].ccdata) +
                                                      ' dE = {:6.5f}'.format(val['tasks'][i].ccdata.scfenergies[-1] -
                                                                                 val['tasks'][0].ccdata.scfenergies[-1])]
-            val['tasks'][i].ccdata.writexyz(outdir + '/' + get_formula(val['tasks'][i].ccdata) + '_' + str(val['fold_ind'][i]) + '_g' +
-                                             str(i) + '.xyz')
+            val['tasks'][i].ccdata.writexyz(outdir + '/' + get_formula(val['tasks'][i].ccdata) + '_i' +
+                                             str(i)+ '_' + str(val['fold_ind'][i]) + '.xyz')
 
 def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[Iterable, str] =None, n_isoms=1):
     n_el = len(list(master_dict.keys())[0])
@@ -215,40 +216,33 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
             str_attr.append(attr.split('.')[-1])
     sorted_comps = get_sorted_compositions(master_dict)
 
-    stats_table = PrettyTable(list(element_symbols) + list(str_attr))
+    header_list = list(element_symbols) + ['isomer'] + list(str_attr)
+    cmp_isom_dict = {**{symbol: [] for symbol in element_symbols}, **{'isomer': []}}
+    attr_values_dict = {j: [] for j in str_attr}
     for comp in sorted_comps:
         cmp = tuple(comp)
-        row_items = []
-        for i in range(np.min((n_isom, len(master_dict[cmp])))):
-            row_items += list(cmp)
-            for attr in attributes:
+        for i in range(np.min((n_isoms, len(master_dict[cmp]['tasks'])))):
+            for i_s, sym in enumerate(element_symbols):
+                cmp_isom_dict[sym].append(cmp[i_s])
+            cmp_isom_dict['isomer'].append(i)
+            for i_attr, attr in enumerate(attributes):
                 if hasattr(attr, '__call__'):
-                    row_items.append(attr(master_dict[cmp]['tasks'][i].ccdata))
+                    attr_values_dict[str_attr[i_attr]].append(attr(master_dict[cmp]['tasks'][i].ccdata))
                 elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
                     try:
-                        row_items.append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1])
+                        attr_values_dict[str_attr[i_attr]].append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1])
                     except TypeError:
-                        row_items.append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr))
+                        attr_values_dict[str_attr[i_attr]].append(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr))
                 else:
-                    row_items.append(rgetattr(master_dict[cmp]['tasks'][i], attr))
-            stats_table.add_row(row_items)
+                    attr_values_dict[str_attr[i_attr]].append(rgetattr(master_dict[cmp]['tasks'][i], attr))
+    table_dict = {**cmp_isom_dict, **attr_values_dict}
+
+    stats_table = PrettyTable()
+
+    for header in header_list:
+        stats_table.add_column(header, table_dict[header])
+
     with open(res_folder + '/output.txt', 'w') as stats_fid:
-        # stats_fid.write(('%4.4s' * n_el) % element_symbols +
-        #                 ('%13.13s' * len(attributes) ) % tuple(str_attr) + '\n')
-        # for comp in sorted_comps:
-        #     cmp = tuple(comp)
-        #     for i in range(np.min((n_isom, len(master_dict[cmp])))):
-        #         res_str = ('%4d' * n_el) % cmp
-        #         for attr in attributes:
-        #             if hasattr(attr, '__call__'):
-        #                 res_str += ('   %.20s' % str(attr(master_dict[cmp]['tasks'][i].ccdata)))
-        #             elif hasattr(master_dict[cmp]['tasks'][i].ccdata, attr):
-        #                 try:
-        #                     res_str += ('   %.20s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)[-1]))
-        #                 except TypeError:
-        #                     res_str += ('   %.20s' % str(rgetattr(master_dict[cmp]['tasks'][i].ccdata, attr)))
-        #             else:
-        #                 res_str += ('   %.20s' %  str(rgetattr(master_dict[cmp]['tasks'][i], attr)))
                 stats_table.vrules = 0
                 stats_fid.write(str(stats_table))
 
