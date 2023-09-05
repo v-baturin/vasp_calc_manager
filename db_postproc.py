@@ -252,6 +252,24 @@ def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[I
                 stats_table.vrules = 0
                 stats_fid.write(str(stats_table))
 
+    if n_el == 2:
+        groundstate_dict = {k: [] for k in attr_values_dict.keys()}
+        # Filter only lowest-energy structures
+        gs_indices = np.where(np.array(table_dict['isomer']) == 0)[0]
+        for i_gs in gs_indices:
+            for k in groundstate_dict.keys():
+                groundstate_dict[k].append(table_dict[k][i_gs])
+        cmps_array = np.array(sorted_comps)
+        for i, attr in enumerate(str_attr):
+            try:
+                values_column = np.array(groundstate_dict[attr], dtype=float)
+            except:
+                continue
+            attr_listfmt = np.hstack((cmps_array, values_column.reshape((-1,1))))
+            list_fmt2table(attr_listfmt, outfile=res_folder + f'/{attr}_TABLE.txt')
+
+
+
 
 def plot_el_spectra_binary(master_dict, element_symbols, savefiles=True, save_folder='spectra_graphs', groupped=True,
                            format='png', norm_by_natom=False, pdoskeys=None, **drawspectrum_kwargs):
