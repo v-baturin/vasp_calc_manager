@@ -187,7 +187,7 @@ def write_xyz_of_n_lowest(master_dict, n_lowest, outdir='xyz_files'):
             val['tasks'][i].ccdata.writexyz(outdir + '/' + get_formula(val['tasks'][i].ccdata) + '_' + str(val['fold_ind'][i]) + '_g' +
                                              str(i) + '.xyz')
 
-def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[Iterable, str] =None, n_isom=1):
+def write_txt_data(master_dict, element_symbols, res_folder, attributes: Union[Iterable, str] =None, n_isoms=1):
     n_el = len(list(master_dict.keys())[0])
     if attributes is None:
         attributes = ['scfenergies', 'gap']
