@@ -1,4 +1,4 @@
-The code manages batch calculations with Gaussian quantum chemistry package.
+The code manages batch calculations with VASP quantum chemistry package.
 This includes:
   
   - **Starting** calculations using
