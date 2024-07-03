@@ -17,7 +17,7 @@ DEFAULT_RES_FOLDER = 'results'
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--machine", required=False, help='Which cluster')
 ap.add_argument("-f", "--recalc_folder", required=False, help='Calc folder')
-ap.add_argument("-g", "--geoms_file", required=False, help="POSCARS-file or xyz-batch", default='POSCARS')
+ap.add_argument("-g", "--geoms_file", required=False, help="POSCARS-file", default='POSCARS')
 ap.add_argument("-m", "--maxcalcs", required=False, help='Maximum parallel calcs', default='1')
 ap.add_argument("-o", "--outfile_pattern", required=False, help='Output file pattern', default='log')
 ap.add_argument("-s", "--sleep", required=False, help='Sleep time, in minutes', default='5')
